@@ -57,7 +57,7 @@ class ldap::server::config(
     pattern    => $ldap::params::server_pattern,
     require    => [
       Package[$ldap::params::server_package],
-      File["${ldap::params::server_path}"],
+      File['server_config'],
       ],
   }
 
