@@ -204,13 +204,20 @@ class ldap(
     if(!$ssl_cert) {
       fail("When ssl is enabled you must define ssl_cert (filename)")
     }
+
+    # Allow users to serve up from their own modules, if they want.
+    if ( $ssl_cert =~ /^puppet:/ ) {
+      $ssl_cert_src = $ssl_cert
+    } else {
+      $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
+    }
       
     file { "${ldap::params::cacertdir}/${ssl_cert}":
       ensure => $ensure,
       owner  => 'root',
       group  => $ldap::params::group,
       mode   => 0640,
-      source => "puppet:///files/ldap/${ssl_cert}"
+      source => $ssl_cert_src,
     }
         
     # Create certificate hash file

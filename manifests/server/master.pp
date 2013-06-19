@@ -182,10 +182,29 @@ class ldap::server::master(
 
   if($ssl) {
 
+    # Some installations will not have a /etc/puppetlabs/puppet/fileserver.conf
+    # configured, or will rely on using certs from another module.
+    # As such, allow users to serve up from their own modules, if they want.
+    if ( $ssl_ca =~ /^puppet:/ ) {
+      $ssl_ca_src = $ssl_ca
+    } else {
+      $ssl_ca_src = "puppet:///files/ldap/${ssl_ca}"
+    }
+    if ( $ssl_cert =~ /^puppet:/ ) {
+      $ssl_cert_src = $ssl_cert
+    } else {
+      $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
+    }
+    if ( $ssl_key =~ /^puppet:/ ) {
+      $ssl_key_src = $ssl_key
+    } else {
+      $ssl_key_src = "puppet:///files/ldap/${ssl_key}"
+    }
+
     if(!$ssl_ca) { fail("${msg_prefix} ssl_ca ${msg_suffix}") }
     file { 'ssl_ca':
       ensure  => present,
-      source  => "puppet:///files/ldap/${ssl_ca}",
+      source  => $ssl_ca_src,
       path    => "${ldap::params::ssl_prefix}/${ssl_ca}",
     }
 
@@ -199,7 +218,7 @@ class ldap::server::master(
     if(!$ssl_key) { fail("${msg_prefix} ssl_key ${msg_suffix}") }
     file { 'ssl_key':
       ensure  => present,
-      source  => "puppet:///files/ldap/${ssl_key}",
+      source  => $ssl_key_src,
       path    => "${ldap::params::ssl_prefix}/${ssl_key}",
     }
 
