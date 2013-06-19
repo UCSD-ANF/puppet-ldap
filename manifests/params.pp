@@ -63,7 +63,7 @@ class ldap::params {
       $owner     = 'ldap'
       $group     = 'ldap'
       $config    = 'ldap.conf'
-      $cacertdir = '/etc/openldap/cacerts'
+      $cacertdir = '/etc/pki/tls/certs'
 
       $server_package  = [ 'openldap-servers' ]
       $server_config   = 'slapd.conf'
