@@ -204,7 +204,11 @@ class ldap(
     ldap::ssl { 'client':
       ensure   => $ensure,
       ssl_cert => $ssl_cert,
+      before   =>
+      File["${ldap::params::prefix}/${ldap::params::config}"],
     }
+    # Get rendered path for templates (currently unused).
+    $ssl_cert_name  = Ldap::Ssl::Client['ssl_ca_dst']
   }
    
   # require module nsswitch

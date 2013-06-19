@@ -164,15 +164,7 @@ class ldap::server::master(
     ensure  => $ensure,
     content => template("ldap/${ldap::params::server_config}.erb"),
     notify  => Service[$ldap::params::service],
-    require => $ssl ? {
-      false => [
-        Package[$ldap::params::server_package],
-        ],
-      true => [
-        Package[$ldap::params::server_package],
-        Class['ldap::ssl'],
-        ]
-      }
+    require => Package[$ldap::params::server_package],
   }
 
   # require defined type ssl
@@ -182,7 +174,13 @@ class ldap::server::master(
       ssl_ca   => $ssl_ca,
       ssl_cert => $ssl_cert,
       ssl_key  => $ssl_key,
+      before   =>
+      File["${ldap::params::prefix}/${ldap::params::server_config}"],
     }
+    # Get rendered path for templates.
+    $ssl_ca_name    = Ldap::Ssl::Master['ssl_cert_dst']
+    $ssl_cert_name  = Ldap::Ssl::Master['ssl_ca_dst']
+    $ssl_key_name   = Ldap::Ssl::Master['ssl_key_dst']
   }
 }
 
