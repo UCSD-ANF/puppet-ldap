@@ -22,76 +22,76 @@
 #  [timelimit]
 #    Time limit in seconds to use when performing searches
 #    *Optional* (defaults to 30)
-#    
+#
 #  [bind_timelimit]
 #    *Optional* (defaults to 30)
 #
 #  [idle_timelimit]
 #    *Optional* (defaults to 30)
-#    
+#
 #  [binddn]
 #    Default bind dn to use when performing ldap operations
 #    *Optional* (defaults to false)
-#    
+#
 #  [bindpw]
 #    Password for default bind dn
 #    *Optional* (defaults to false)
-#    
+#
 #  [ssl]
 #    Enable TLS/SSL negotiation with the server
 #    *Requires*: ssl_cert parameter
 #    *Optional* (defaults to false)
-#    
+#
 #  [ssl_cert]
 #    Filename for the CA (or self signed certificate). It should
 #    be located under puppet:///files/ldap/
 #    *Optional* (defaults to false)
-#    
+#
 #  [nsswitch]
 #    If enabled (nsswitch => true) enables nsswitch to use
 #    ldap as a backend for password, group and shadow databases.
 #    *Requires*: https://github.com/torian/puppet-nsswitch.git (in alpha)
 #    *Optional* (defaults to false)
-#    
+#
 #  [nss_passwd]
-#    Search base for the passwd database. *base* will be appended. 
+#    Search base for the passwd database. *base* will be appended.
 #    *Optional* (defaults to false)
-#    
+#
 #  [nss_group]
-#    Search base for the group database. *base* will be appended. 
+#    Search base for the group database. *base* will be appended.
 #    *Optional* (defaults to false)
-#    
+#
 #  [nss_shadow]
-#    Search base for the shadow database. *base* will be appended. 
+#    Search base for the shadow database. *base* will be appended.
 #    *Optional* (defaults to false)
-#    
+#
 #  [pam]
 #    If enabled (pam => true) enables pam module, which will
 #    be setup to use pam_ldap, to enable authentication.
 #    *Requires*: https://github.com/torian/puppet-pam.git (in alpha)
 #    *Optional* (defaults to false)
-#    
+#
 #  [pam_att_login]
 #    User's login attribute
 #    *Optional* (defaults to *'uid'*)
-#    
+#
 #  [pam_att_member]
 #    Member attribute to use when testing user's membership
 #    *Optional* (defaults to *'member'*)
-#    
+#
 #  [pam_passwd]
 #    Password hash algorithm
 #    *Optional* (defaults to *'md5'*)
-#    
+#
 #  [pam_filter]
 #    Filter to use when retrieving user information
 #    *Optional* (defaults to *'objectClass=posixAccount'*)
-#    
+#
 #  [enable_motd]
 #    Use motd to report the usage of this module.
 #    *Requires*: https://github.com/torian/puppet-motd.git
 #    *Optional* (defaults to false)
-#    
+#
 #  [ensure]
 #    *Optional* (defaults to 'present')
 #
@@ -101,7 +101,7 @@
 #   - RHEL       5.x   / 6.x
 #   - CentOS     5.x   / 6.x
 #   - OpenSuse:  11.x  / 12.x
-#   - OVS:       2.1.1 / 2.1.5 / 2.2.0 / 3.0.2 
+#   - OVS:       2.1.1 / 2.1.5 / 2.2.0 / 3.0.2
 #
 #
 # === Examples
@@ -144,7 +144,7 @@
 #
 #
 class ldap(
-  $uri, 
+  $uri,
   $base,
   $version        = '3',
   $timelimit      = 30,
@@ -154,18 +154,18 @@ class ldap(
   $bindpw         = false,
   $ssl            = false,
   $ssl_cert       = false,
-    
+
   $nsswitch   = false,
   $nss_passwd = false,
   $nss_group  = false,
   $nss_shadow = false,
-    
+
   $pam            = false,
   $pam_att_login  = 'uid',
   $pam_att_member = 'member',
   $pam_passwd     = 'md5',
   $pam_filter     = 'objectClass=posixAccount',
-    
+
   $enable_motd    = false,
   $ensure         = present) {
 
@@ -181,7 +181,7 @@ class ldap(
 
   File {
     ensure  => $ensure,
-    mode    => 0644,
+    mode    => '0644',
     owner   => $ldap::params::owner,
     group   => $ldap::params::group,
   }
@@ -194,39 +194,63 @@ class ldap(
     require => Package[$ldap::params::package],
   }
 
-  file { "${ldap::params::prefix}/${ldap::params::config}":
+  file { 'client_config':
     content => template("ldap/${ldap::params::config}.erb"),
     require => File[$ldap::params::prefix],
+    path    => "${ldap::params::prefix}/${ldap::params::config}",
   }
-    
-  # require defined type ssl
+
+  # Conditionally set up SSL.
   if $ssl {
-    ldap::ssl { 'client':
-      ensure   => $ensure,
-      ssl_cert => $ssl_cert,
-      before   =>
-      File["${ldap::params::prefix}/${ldap::params::config}"],
+    $msg_prefix = $ldap::params::ssl_msg_prefix
+    $msg_suffix = $ldap::params::ssl_msg_suffix
+
+    # Fail early.
+    if !$ssl_cert { fail("${msg_prefix} ssl_cert ${msg_suffix}") }
+
+    # Normalize a couple parameters into this class's namespace.
+    $ssl_prefix   = $ldap::params::ssl_prefix
+    $cacertdir    = $ldap::params::cacertdir
+
+    # Allow users to define their own puppet resource or simple filename.
+    if ( $ssl_cert =~ /^puppet\:/ ) {
+      $ssl_cert_src = $ssl_cert
+      $ssl_cert_dst = inline_template(
+        "<%= ssl_prefix %>/<%= File.basename(ssl_cert) %>")
+    } else {
+      $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
+      $ssl_cert_dst = "${cacertdir}/${ssl_cert}"
     }
-    # Get rendered path for templates (currently unused).
-    $ssl_cert_name  = Ldap::Ssl::Client['ssl_ca_dst']
+    file { 'ssl_client_cert':
+      ensure => $ensure,
+      source => $ssl_cert_src,
+      path   => $ssl_cert_dst,
+      before => File['client_config'],
+    }
+
+    # Symlink certificate to a filename based on the cert hash.
+    $target = "${cacertdir}/$(openssl x509 -noout -hash -in ${ssl_cert_dst}).0"
+    exec { "Server certificate hash":
+      command => "ln -s ${ssl_cert_dst} ${target}",
+      unless  => "test -f ${target}",
+      require => File['ssl_client_cert'],
+    }
   }
-   
+
   # require module nsswitch
   if($nsswitch == true) {
     class { 'nsswitch':
       uri         => $uri,
       base        => $base,
       module_type => $ensure ? {
-                        'present' => 'ldap',
-                        default   => 'none'
-                      },
+        'present' => 'ldap',
+        default   => 'none'
+      },
     }
   }
-    
+
   # require module pam
   if($pam == true) {
     Class ['pam::pamd'] -> Class['ldap']
   }
-
 }
-
