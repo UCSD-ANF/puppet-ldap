@@ -184,54 +184,35 @@ class ldap::server::slave(
   $sync_attrs     = '*',
   $sync_scope     = 'sub',
   $enable_motd    = false,
-  $ensure         = 'present') {
-
-  include ldap::params
-
-  if($enable_motd) {
-    motd::register { 'ldap::server::slave': }
-  }
-
-  package { $ldap::params::server_package:
-    ensure => $ensure
-  }
-
-  service { $ldap::params::service:
-    ensure     => running,
-    enable     => true,
-    pattern    => $ldap::params::server_pattern,
-    require    => [
-      Package[$ldap::params::server_package],
-      File["${ldap::params::prefix}/${ldap::params::server_config}"],
-      ]
-  }
- 
-  File {
-    mode    => 0640,
-    owner   => $ldap::params::server_owner,
-    group   => $ldap::params::server_group,
-  }
-  
-  file { "${ldap::params::prefix}/${ldap::params::server_config}":
-    ensure  => $ensure,
-    content => template("ldap/${ldap::params::server_config}.erb"),
-    notify  => Service[$ldap::params::service],
-    require => Package[$ldap::params::server_package],
-  }
-
-  # require defined type ssl
-  if $ssl {
-    ldap::ssl { 'slave':
-      ensure   => $ensure,
-      ssl_ca   => $ssl_ca,
-      ssl_cert => $ssl_cert,
-      ssl_key  => $ssl_key,
-      before   =>
-      File["${ldap::params::prefix}/${ldap::params::server_config}"],
-    }
-    # Get rendered path for templates.
-    $ssl_ca_name    = Ldap::Ssl::Slave['ssl_cert_dst']
-    $ssl_cert_name  = Ldap::Ssl::Slave['ssl_ca_dst']
-    $ssl_key_name   = Ldap::Ssl::Slave['ssl_key_dst']
+  $ensure         = 'present',
+) {
+  # Call parameterized server config class.
+  class { 'ldap::server::config':
+    bind_anon       => $bind_anon,
+    enable_motd     => $enable_motd,
+    ensure          => $ensure,
+    index_inc       => $index_inc,
+    log_level       => $log_level,
+    modules_inc     => $modules_inc,
+    rootdn          => $rootdn,
+    rootpw          => $rootpw,
+    schema_inc      => $schema_inc,
+    ssl             => $ssl,
+    ssl_ca          => $ssl_ca,
+    ssl_cert        => $ssl_cert,
+    ssl_key         => $ssl_key,
+    suffix          => $suffix,
+    sync_attrs      => $sync_attrs,
+    sync_base       => $sync_base,
+    sync_binddn     => $sync_binddn,
+    sync_bindpw     => $sync_bindpw,
+    sync_filter     => $sync_filter,
+    sync_interval   => $sync_interval,
+    sync_provider   => $sync_provider,
+    sync_rid        => $sync_rid,
+    sync_scope      => $sync_scope,
+    sync_type       => $sync_type,
+    sync_updatedn   => $sync_updatedn,
+    type            => 'slave',
   }
 }

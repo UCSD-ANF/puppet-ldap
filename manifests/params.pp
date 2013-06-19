@@ -224,6 +224,9 @@ class ldap::params {
     }
 
   }
-
+  $ssl_msg_prefix = 'SSL enabled. You must specify'
+  $ssl_msg1       = '(filename). puppet:///files/ldap is the default location, '
+  $ssl_msg2       = 'but you may also provide a different Puppet-friendly path.'
+  $ssl_msg_suffix = "${ssl_msg1}${ssl_msg2}"
 }
 

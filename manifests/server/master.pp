@@ -91,18 +91,18 @@
 # === Examples
 #
 # class { 'ldap::server::master':
-#	suffix      => 'dc=foo,dc=bar',
-#	rootpw      => '{SHA}iEPX+SQWIR3p67lj/0zigSWTKHg=',
-#	syncprov    => true,
-#	sync_binddn => 'cn=sync,dc=foo,dc=bar',
-#	modules_inc => [ 'syncprov' ],
-#	schema_inc  => [ 'gosa/samba3', 'gosa/gosystem' ],
-#	index_inc   => [
-#		'index memberUid            eq',
-#		'index mail                 eq',
-#		'index givenName            eq,subinitial',
-#		],
-#	}
+#  suffix      => 'dc=foo,dc=bar',
+#  rootpw      => '{SHA}iEPX+SQWIR3p67lj/0zigSWTKHg=',
+#  syncprov    => true,
+#  sync_binddn => 'cn=sync,dc=foo,dc=bar',
+#  modules_inc => [ 'syncprov' ],
+#  schema_inc  => [ 'gosa/samba3', 'gosa/gosystem' ],
+#  index_inc   => [
+#    'index memberUid            eq',
+#    'index mail                 eq',
+#    'index givenName            eq,subinitial',
+#    ],
+#  }
 #
 # === Authors
 #
@@ -132,55 +132,28 @@ class ldap::server::master(
   $syncprov_sessionlog = '100',
   $sync_binddn         = false,
   $enable_motd         = false,
-  $ensure              = present) {
-
-  include ldap::params
-    
-  if($enable_motd) { 
-    motd::register { 'ldap::server::master': } 
-  }
-    
-  package { $ldap::params::server_package:
-    ensure => $ensure
-  }
-
-  service { $ldap::params::service:
-    ensure     => running,
-    enable     => true,
-    pattern    => $ldap::params::server_pattern,
-    require    => [
-      Package[$ldap::params::server_package],
-      File["${ldap::params::prefix}/${ldap::params::server_config}"],
-      ]
-  }
-    
-  File {
-    mode    => 0640,
-    owner   => $ldap::params::server_owner,
-    group   => $ldap::params::server_group,
-  }
-
-  file { "${ldap::params::prefix}/${ldap::params::server_config}":
-    ensure  => $ensure,
-    content => template("ldap/${ldap::params::server_config}.erb"),
-    notify  => Service[$ldap::params::service],
-    require => Package[$ldap::params::server_package],
-  }
-
-  # require defined type ssl
-  if $ssl {
-    ldap::ssl { 'master':
-      ensure   => $ensure,
-      ssl_ca   => $ssl_ca,
-      ssl_cert => $ssl_cert,
-      ssl_key  => $ssl_key,
-      before   =>
-      File["${ldap::params::prefix}/${ldap::params::server_config}"],
-    }
-    # Get rendered path for templates.
-    $ssl_ca_name    = Ldap::Ssl::Master['ssl_cert_dst']
-    $ssl_cert_name  = Ldap::Ssl::Master['ssl_ca_dst']
-    $ssl_key_name   = Ldap::Ssl::Master['ssl_key_dst']
+  $ensure              = present,
+) {
+  # Call parameterized server config class.
+  class { 'ldap::server::config' :
+    bind_anon           => $bind_anon,
+    enable_motd         => $enable_motd,
+    ensure              => $ensure,
+    index_inc           => $index_inc,
+    log_level           => $log_level,
+    modules_inc         => $modules_inc,
+    rootdn              => $rootdn,
+    rootpw              => $rootpw,
+    schema_inc          => $schema_inc,
+    ssl                 => $ssl,
+    ssl_ca              => $ssl_ca,
+    ssl_cert            => $ssl_cert,
+    ssl_key             => $ssl_key,
+    suffix              => $suffix,
+    sync_binddn         => $sync_binddn,
+    syncprov            => $syncprov,
+    syncprov_checkpoint => $syncprov_checkpoint,
+    syncprov_sessionlog => $syncprov_sessionlog,
+    type                => 'master',
   }
 }
-
