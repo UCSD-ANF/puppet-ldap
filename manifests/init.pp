@@ -199,35 +199,14 @@ class ldap(
     require => File[$ldap::params::prefix],
   }
     
-  if($ssl) {
-   
-    if(!$ssl_cert) {
-      fail("When ssl is enabled you must define ssl_cert (filename)")
-    }
-
-    # Allow users to serve up from their own modules, if they want.
-    if ( $ssl_cert =~ /^puppet:/ ) {
-      $ssl_cert_src = $ssl_cert
-    } else {
-      $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
-    }
-      
-    file { "${ldap::params::cacertdir}/${ssl_cert}":
-      ensure => $ensure,
-      owner  => 'root',
-      group  => $ldap::params::group,
-      mode   => 0640,
-      source => $ssl_cert_src,
-    }
-        
-    # Create certificate hash file
-    exec { "Build cert hash":
-      command => "ln -s ${ldap::params::cacertdir}/${ssl_cert} ${ldap::params::cacertdir}/$(openssl x509 -noout -hash -in ${ldap::params::cacertdir}/${ssl_cert}).0",
-      unless  => "test -f ${ldap::params::cacertdir}/$(openssl x509 -noout -hash -in ${ldap::params::cacertdir}/${ssl_cert}).0",
-      require => File["${ldap::params::cacertdir}/${ssl_cert}"]
+  # require defined type ssl
+  if $ssl {
+    ldap::ssl { 'client':
+      ensure   => $ensure,
+      ssl_cert => $ssl_cert,
     }
   }
-
+   
   # require module nsswitch
   if($nsswitch == true) {
     class { 'nsswitch':
