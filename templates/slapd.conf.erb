@@ -56,13 +56,13 @@ rootpw		"<%= rootpw %>"
 #######################################################################
 # << Syncprov
 
-<% if @syncprov and syncprov == true then -%>
+<% if has_variable?('syncprov') and syncprov == true then -%>
 overlay syncprov
 syncprov-checkpoint <%= syncprov_checkpoint %>
 syncprov-sessionlog <%= syncprov_sessionlog %>
 <% end -%>
 
-<% if @sync_rid then -%>
+<% if has_variable?('sync_rid') then -%>
 syncrepl rid=<%= sync_rid %>
 	provider=<%= sync_provider %>
 	type=<%= sync_type %>
@@ -91,7 +91,7 @@ dbconfig set_lk_max_lockers 1500
 
 lastmod		on
 
-<% if @syncprov and sync_binddn != false then -%>
+<% if has_variable?('syncprov') and sync_binddn != false then -%>
 limits dn.exact="<%= sync_binddn%>" time.soft=unlimited time.hard=unlimited size.soft=unlimited size.hard=unlimited
 <% end -%>
 
@@ -105,7 +105,7 @@ limits dn.exact="<%= sync_binddn%>" time.soft=unlimited time.hard=unlimited size
 
 # users can authenticate and change their password
 access to dn.subtree="<%= suffix %>" attrs=userPassword,shadowLastChange,
-<% if @syncprov and sync_binddn != false then -%>
+<% if has_variable?('syncprov') and sync_binddn != false then -%>
 	by dn.exact="<%= sync_binddn %>" read
 <% end -%>
 	by self write
@@ -113,7 +113,7 @@ access to dn.subtree="<%= suffix %>" attrs=userPassword,shadowLastChange,
 	by * none
 
 #access to dn.subtree="<%= suffix %>" attrs=sambaNTPassword,sambaLMPassword,sambaPwdMustChange,sambaBadPasswordCount,sambaBadPasswordTime,sambaPwdLastSet
-#<% if @syncprov and sync_binddn != false then -%>
+#<% if has_variable?('syncprov') and sync_binddn != false then -%>
 #	by dn.exact="<%= sync_binddn %>" read
 #<% end -%>
 #	by self write
@@ -122,13 +122,13 @@ access to dn.subtree="<%= suffix %>" attrs=userPassword,shadowLastChange,
 
 ## some attributes need to be readable anonymously so that 'id user' can answer correctly
 access to dn.subtree="<%= suffix %>" attrs=objectClass,entry,gecos,homeDirectory,uid,uidNumber,gidNumber,cn,memberUid
-<% if @syncprov and sync_binddn != false then -%>
+<% if has_variable?('syncprov') and sync_binddn != false then -%>
 	by dn.exact="<%= sync_binddn %>" read
 <% end -%>
 	by * read
 
 access to dn.subtree="<%= suffix %>"
-<% if @syncprov and sync_binddn != false then -%>
+<% if has_variable?('syncprov') and sync_binddn != false then -%>
 	by dn.exact="<%= sync_binddn %>" read
 <% end -%>
 	by self read
