@@ -35,9 +35,9 @@ moduleload	<%= mod %>
 #moduleload	syncprov
 
 <% if ssl == true then -%>
-TLSCACertificateFile   <%= scope.lookupvar('ldap::params::ssl_prefix') %>/<%= File.basename(ssl_ca)   %>
-TLSCertificateFile     <%= scope.lookupvar('ldap::params::ssl_prefix') %>/<%= File.basename(ssl_cert) %>
-TLSCertificateKeyFile  <%= scope.lookupvar('ldap::params::ssl_prefix') %>/<%= File.basename(ssl_key)  %>
+TLSCACertificateFile   <%= ssl_ca_dst   %>
+TLSCertificateFile     <%= ssl_cert_dst %>
+TLSCertificateKeyFile  <%= ssl_key_dst  %>
 #TLSVerifyClient        allow
 <% end -%>
 
