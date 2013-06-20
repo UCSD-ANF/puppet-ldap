@@ -1,10 +1,10 @@
 ###############################################################################
 # << FILE MANAGED BY PUPPET >>
-# Manual changes are likey to be overwritten
+# Manual changes are likely to be overwritten
 ###############################################################################
 
 #allow bind_v2
-<% if bind_anon == true then -%>
+<% if @bind_anon and bind_anon == true then -%>
 allow bind_anon_dn
 <% end -%>
 
@@ -34,7 +34,7 @@ moduleload	<%= mod %>
 <% end -%>
 #moduleload	syncprov
 
-<% if ssl == true then -%>
+<% if @ssl and ssl == true then -%>
 TLSCACertificateFile   <%= ssl_ca_dst   %>
 TLSCertificateFile     <%= ssl_cert_dst %>
 TLSCertificateKeyFile  <%= ssl_key_dst  %>

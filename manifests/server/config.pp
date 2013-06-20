@@ -61,21 +61,7 @@ class ldap::server::config(
       ],
   }
 
-  File {
-    mode    => '0640',
-    owner   => $ldap::params::server_owner,
-    group   => $ldap::params::server_group,
-  }
-
-  file { 'server_config':
-    ensure  => $ensure,
-    content => template("ldap/${ldap::params::server_config}.erb"),
-    path    => "${ldap::params::prefix}/${ldap::params::server_config}",
-    notify  => Service[$ldap::params::service],
-    require => Package[$ldap::params::server_package],
-  }
-
-  # Conditionally set up SSL.
+  # Conditionally set up SSL before we call our template.
   if $ssl {
     $msg_prefix = $ldap::params::ssl_msg_prefix
     $msg_suffix = $ldap::params::ssl_msg_suffix
@@ -142,5 +128,20 @@ class ldap::server::config(
       unless  => "test -f ${target}",
       require => File['ssl_cert'],
     }
+  }
+
+  # Configure server.
+  File {
+    mode    => '0640',
+    owner   => $ldap::params::server_owner,
+    group   => $ldap::params::server_group,
+  }
+
+  file { 'server_config':
+    ensure  => $ensure,
+    content => template("ldap/${ldap::params::server_config}.erb"),
+    path    => "${ldap::params::prefix}/${ldap::params::server_config}",
+    notify  => Service[$ldap::params::service],
+    require => Package[$ldap::params::server_package],
   }
 }
