@@ -1,232 +1,161 @@
-
+# Parameters for LDAP.
 class ldap::params {
 
-  case $operatingsystem {
-    
-    /(?i:Debian|Ubuntu)/: {
-
-      $package   = [ 'ldap-utils' ]
-            
-      $prefix    = '/etc/ldap'
-      $owner     = 'root'
-      $group     = 'root'
-      $config    = 'ldap.conf'
-      $cacertdir = '/etc/ssl/certs'
-
-      $service         = 'slapd'
-      $server_pattern  = 'slapd'
-      $server_package  = [ 'slapd' ]
-      $server_config   = 'slapd.conf'
-      $server_owner    = 'openldap'
-      $server_group    = 'openldap'
-      $db_prefix       = '/var/lib/ldap'
-      $ssl_prefix      = '/etc/ssl/certs'
-      $server_run      = '/var/run/openldap'
-
-      case $::architecture {
-        /^amd64/: { 
-          $module_prefix = '/usr/lib64/ldap' 
-        }
-
-        /^i?[346]86/: {
-          $module_prefix = '/usr/lib32/ldap'
-        }
-
-        default: {
-          fail("Architecture not supported (${::architecture})")
-        }
-      }
-
-      $modules_base  = [ 'back_bdb' ]
-            
-      $schema_prefix   = "${prefix}/schema"
-      $schema_base     = [ 'core', 'cosine', 'nis', 'inetorgperson', ]
-      $index_base      = [
-        'index objectclass  eq',
-        'index entryCSN     eq',
-        'index entryUUID    eq',
-        'index uidNumber    eq',
-        'index gidNumber    eq',
-        'index cn           pres,sub,eq',
-        'index sn           pres,sub,eq',
-        'index uid          pres,sub,eq',
-        'index displayName  pres,sub,eq',
-        ]
-
-    }
-
-    /(?i:Redhat|CentOS)/: {
-          
-      $package   = [ 'openldap', 'openldap-clients' ]
-            
-      $prefix    = '/etc/openldap'
-      $owner     = 'ldap'
-      $group     = 'ldap'
-      $config    = 'ldap.conf'
-      $cacertdir = '/etc/pki/tls/certs'
-
-      $server_package  = [ 'openldap-servers' ]
-      $server_config   = 'slapd.conf'
-
-      case $::operatingsystemrelease {
-        /^5\./: {
-          $service         = 'ldap'
-        }
-
-        /^6\./: {
-          $service         = 'slapd'
-        }
-
-      }
-      $server_pattern  = 'slapd'
-      $server_owner    = 'ldap'
-      $server_group    = 'ldap'
-
-      $schema_prefix   = "${prefix}/schema"
-      $db_prefix     = '/var/lib/ldap'
-
-      case $::architecture {
-        /^x86_64/: { 
-          $module_prefix = '/usr/lib64/openldap'
-        }
-
-        /^i?[346]86/: {
-          $module_prefix = '/usr/lib/openldap'
-        }
-
-        default: {
-          fail("Architecture not supported (${::architecture})")
-        }
-      }
-
-      $ssl_prefix    = '/etc/openldap/cacerts'
-      $server_run    = '/var/run/openldap'
-      $schema_base   = [ 'core', 'cosine', 'nis', 'inetorgperson', ]
-      $modules_base  = [ ]
-      $index_base    = [
-        'index objectclass  eq',
-        'index entryCSN     eq',
-        'index entryUUID    eq',
-        'index uidNumber    eq',
-        'index gidNumber    eq',
-        'index cn           pres,sub,eq',
-        'index sn           pres,sub,eq',
-        'index uid          pres,sub,eq',
-        'index displayName  pres,sub,eq',
-        ]
-    }
-
-    /(?i:OVS)/: {
-          
-      $package   = [ 'openldap', 'openldap-clients' ]
-            
-      $prefix    = '/etc/openldap'
-      $owner     = 'root'
-      $group     = 'root'
-      $config    = 'ldap.conf'
-      $cacertdir = '/etc/openldap/cacerts'
-
-      $server_package  = [ 'openldap-servers' ]
-      $server_config   = 'slapd.conf'
-      $service         = 'slapd'
-      $server_pattern  = 'slapd'
-      $server_owner    = 'ldap'
-      $server_group    = 'ldap'
-
-      $schema_prefix   = "${prefix}/schema"
-      $db_prefix     = '/var/lib/ldap'
-
-      case $::architecture {
-        /^x86_64/: { 
-          $module_prefix = '/usr/lib64/openldap'
-        }
-
-        /^i?[346]86/: {
-          $module_prefix = '/usr/lib/openldap'
-        }
-
-        default: {
-          fail("Architecture not supported (${::architecture})")
-        }
-      }
-
-      $ssl_prefix    = '/etc/openldap/cacerts'
-      $server_run    = '/var/run/openldap'
-      $schema_base   = [ 'core', 'cosine', 'nis', 'inetorgperson', 'authldap' ]
-      $modules_base  = [ 'back_bdb' ]
-      $index_base    = [
-        'index objectclass  eq',
-        'index entryCSN     eq',
-        'index entryUUID    eq',
-        'index uidNumber    eq',
-        'index gidNumber    eq',
-        'index cn           pres,sub,eq',
-        'index sn           pres,sub,eq',
-        'index uid          pres,sub,eq',
-        'index displayName  pres,sub,eq',
-        ]
-    }
-
-    /(?i:OpenSuSE|SLES)/: {
-      $package   = [ 'openldap2-client' ]
-            
-      $prefix    = '/etc/openldap'
-      $owner     = 'root'
-      $group     = 'root'
-      $config    = 'ldap.conf'
-      $cacertdir = '/etc/ssl/certs'
-
-      $server_package  = [ 'openldap2' ]
-      $server_config   = 'slapd.conf'
-      $service         = 'ldap'
-      $server_script   = 'ldap'
-      $server_pattern  = 'slapd'
-      $server_owner    = 'root'
-      $server_group    = 'ldap'
-
-      $schema_prefix   = "${prefix}/schema"
-      $db_prefix     = '/var/lib/ldap'
-
-      case $::architecture {
-        /^x86_64/: { 
-          $module_prefix = '/usr/lib/openldap'
-        }
-
-        /^i?[346]86/: {
-          $module_prefix = '/usr/lib/openldap'
-        }
-
-        default: {
-          fail("Architecture not supported (${::architecture})")
-        }
-      }
-
-      $ssl_prefix    = '/etc/ssl/certs'
-      $server_run    = '/var/run/slapd'
-      $schema_base   = [ 'core', 'cosine', 'nis', 'inetorgperson', ]
-      $modules_base  = [ 'back_bdb' ]
-      $index_base    = [
-        'index objectclass  eq',
-        'index entryCSN     eq',
-        'index entryUUID    eq',
-        'index uidNumber    eq',
-        'index gidNumber    eq',
-        'index cn           pres,sub,eq',
-        'index sn           pres,sub,eq',
-        'index uid          pres,sub,eq',
-        'index displayName  pres,sub,eq',
-        ]
-
-    }
-
-    default:  {
-      fail("Operating system ${::operatingsystem} not supported")
-    }
-
+  # Fail on unsupported kernels, architectures, OSes.
+  if $::kernel != 'Linux' {
+    fail("${module_name} unsupported for ${::kernel}.")
   }
+
+  if  $::architecture != 'amd64'
+  and $::architecture != 'x86_64'
+  and $::architecture !~ /^i?[346]86/ {
+    fail("Architecture not supported (${::architecture})")
+  }
+
+  case $::osfamily {
+    /(Debian|Suse)/: {
+      # NOOP
+    } 'RedHat': {
+      # OVS release versions are offset from other variants by 4.
+      # We'll reject other RedHat versions lower than 5, here, so
+      # that we can match [1-5] and/or (1|5) for some
+      # $::osfamily-related checks later.
+      if  $::operatingsystem == 'OVS'
+      and $::operatingsystemrelease !~ /^[1-2]\./ {
+          fail("OS version not supported (${::operatingsystemrelease})")
+      } elsif $::operatingsystemrelease !~ /^[5-6]\./ {
+          fail("OS version not supported (${::operatingsystemrelease})")
+      }
+    } default: {
+      fail("Operating system not supported (${::operatingsystem})")
+    }
+  }
+
+  # Set some variables by OS.
+  $schema_base = $::operatingsystem ? {
+    'OVS'   => [ 'core', 'cosine', 'nis', 'inetorgperson', 'authldap', ],
+    default => [ 'core', 'cosine', 'nis', 'inetorgperson', ],
+  }
+
+  # Set other variables by OS family.
+  $cacertdir = $::osfamily ? {
+    'RedHat' => $::operatingsystemrelease ? {
+      /^[1-5]\./ => '/etc/openldap/cacerts', # /^(1|5)\./ ?
+      default    => '/etc/openldap/certs',
+    },
+    default  => '/etc/ssl/certs',
+  }
+  $config = $::osfamily ? {
+    default  => 'ldap.conf',
+  }
+  $db_prefix = $::osfamily ? {
+    default  => '/var/lib/ldap',
+  }
+  $group = $::osfamily ? {
+    'RedHat' => $::operatingsystemrelease ? {
+      /^[1-5]\./ => 'root', # /^(1|5)\./ ?
+      default    => 'ldap',
+    },
+    default  => 'root',
+  }
+  $index_base = $::osfamily ? {
+    default => [
+      'index objectclass  eq',
+      'index entryCSN     eq',
+      'index entryUUID    eq',
+      'index uidNumber    eq',
+      'index gidNumber    eq',
+      'index cn           pres,sub,eq',
+      'index sn           pres,sub,eq',
+      'index uid          pres,sub,eq',
+      'index displayName  pres,sub,eq',
+    ]
+  }
+  $modules_base = $::osfamily ? {
+    'RedHat' => $::operatingsystem ? {
+      'OVS'   => [ 'back_bdb', ],
+      default => [  ],
+    },
+    default  => [ 'back_bdb', ],
+  }
+  $module_prefix = $::osfamily ? {
+    'Debian' => $::architecture ? {
+      'amd64'      => '/usr/lib64/ldap',
+      /^i?[346]86/ => '/usr/lib32/ldap',
+    },
+    'RedHat' => $::architecture ? {
+      'x86_64'     => '/usr/lib64/openldap',
+      /^i?[346]86/ => '/usr/lib/openldap',
+    },
+    default => '/usr/lib/openldap',
+  }
+  $owner = $::osfamily ? {
+    'RedHat' => $::operatingsystemrelease ? {
+      /^[1-5]\./ => 'root', # /^(1|5)\./ ?
+      default    => 'ldap',
+    },
+    default  => 'root',
+  }
+  $package = $::osfamily ? {
+    'Debian' => [ 'ldap-utils' ],
+    'Suse'   => [ 'openldap2-client' ],
+    default  => [ 'openldap', 'openldap-clients' ],
+  }
+  $prefix = $::osfamily ? {
+    'Debian' => '/etc/ldap',
+    default  => '/etc/openldap',
+  }
+  $schema_prefix = $::osfamily ? {
+    default  => "${prefix}/schema",
+  }
+  $server_config = $::osfamily ? {
+    default  => 'slapd.conf',
+  }
+  $server_group = $::osfamily ? {
+    'Debian' => 'openldap',
+    'RedHat' => $::operatingsystemrelease ? {
+      /^5\./  => 'root', # /^(1|5)\./ ?
+      default => 'ldap',
+    },
+    default  => 'root',
+  }
+  $server_owner = $::osfamily ? {
+    'Debian' => 'openldap',
+    'RedHat' => $::operatingsystemrelease ? {
+      /^5\./  => 'root', # /^(1|5)\./ ?
+      default => 'ldap',
+    },
+    default  => 'root',
+  }
+  $server_package = $::osfamily ? {
+    'Debian' => [ 'slapd' ],
+    'Suse'   => [ 'openldap2' ],
+    default  => [ 'openldap-servers' ],
+  }
+  $server_pattern = $::osfamily ? {
+    default  => 'slapd',
+  }
+  $server_run = $::osfamily ? {
+    'Suse'   => '/var/run/slapd',
+    default  => '/var/run/openldap',
+  }
+  $server_script = $::osfamily ? {
+    'Suse'   => 'ldap',
+    default  => undef,
+  }
+  $service = $::osfamily ? {
+    'RedHat' => $::operatingsystemrelease ? {
+      /^5\./  => 'ldap',
+      default => 'slapd',
+    },
+    'Suse'   => 'ldap',
+    default  => 'slapd',
+  }
+  $ssl_prefix = $cacertdir
+
+  # SSL error messages used in a couple places.
   $ssl_msg_prefix = 'SSL enabled. You must specify'
   $ssl_msg1       = '(filename). puppet:///files/ldap is the default location, '
   $ssl_msg2       = 'but you may also provide a different Puppet-friendly path.'
   $ssl_msg_suffix = "${ssl_msg1}${ssl_msg2}"
 }
-

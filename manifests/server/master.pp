@@ -7,75 +7,75 @@
 # === Parameters
 #
 #  [suffix]
-#    
+#
 #    **Required**
 #
 #  [rootpw]
-#    
+#
 #    **Required**
 #
 #  [rootdn]
-#    
+#
 #    *Optional* (defaults to 'cn=admin,${suffix}')
 #
 #  [schema_inc]
-#    
+#
 #    *Optional* (defaults to [])
-#    
+#
 #  [modules_inc]
-#    
+#
 #    *Optional* (defaults to [])
 #
 #  [index_inc]
-#    
+#
 #    *Optional* (defaults to [])
-#    
+#
 #  [log_level]
-#    
+#
 #    *Optional* (defaults to 0)
-#    
+#
 #  [bind_anon]
-#    
+#
 #    *Optional* (defaults to true)
-#    
+#
 #  [ssl]
-#    
+#
 #    *Requires*: ssl_{cert,ca,key} parameter
 #    *Optional* (defaults to false)
-#    
+#
 #  [ssl_cert]
-#    
+#
 #    *Optional* (defaults to false)
-#    
+#
 #  [ssl_ca]
-#    
+#
 #    *Optional* (defaults to false)
-#    
+#
 #  [ssl_key]
-#    
+#
 #    *Optional* (defaults to false)
-#    
+#
 #  [syncprov]
-#    
+#
 #    *Optional* (defaults to false)
-#    
+#
 #  [syncprov_checkpoint]
-#    
+#
 #    *Optional* (defaults to '100 10')
-#    
+#
 #  [syncprov_sessionlog]
-#    
+#
 #    *Optional* (defaults to *'100'*)
-#    
+#
 #  [sync_binddn]
-#    
+#
 #    *Optional* (defaults to *'false'*)
-#    
+#
 #  [enable_motd]
 #    Use motd to report the usage of this module.
 #    *Requires*: https://github.com/torian/puppet-motd.git
 #    *Optional* (defaults to false)
-#    
+#
 #  [ensure]
 #    *Optional* (defaults to 'present')
 #
@@ -85,7 +85,7 @@
 #   - RHEL       5.x   / 6.x
 #   - CentOS     5.x   / 6.x
 #   - OpenSuse:  11.x  / 12.x
-#   - OVS:       2.1.1 / 2.1.5 / 2.2.0 / 3.0.2 
+#   - OVS:       2.1.1 / 2.1.5 / 2.2.0 / 3.0.2
 #
 #
 # === Examples

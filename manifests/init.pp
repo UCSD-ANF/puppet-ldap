@@ -210,7 +210,6 @@ class ldap(
 
     # Normalize a couple parameters into this class's namespace.
     $ssl_prefix   = $ldap::params::ssl_prefix
-    $cacertdir    = $ldap::params::cacertdir
 
     # Allow users to define their own puppet resource or simple filename.
     if ( $ssl_cert =~ /^puppet\:/ ) {
@@ -219,7 +218,7 @@ class ldap(
         "<%= ssl_prefix %>/<%= File.basename(ssl_cert) %>")
     } else {
       $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
-      $ssl_cert_dst = "${cacertdir}/${ssl_cert}"
+      $ssl_cert_dst = "${ssl_prefix}/${ssl_cert}"
     }
     file { 'ssl_client_cert':
       ensure => $ensure,
@@ -229,7 +228,8 @@ class ldap(
     }
 
     # Symlink certificate to a filename based on the cert hash.
-    $target = "${cacertdir}/$(openssl x509 -noout -hash -in ${ssl_cert_dst}).0"
+    $cmd    = "openssl x509 -noout -hash -in ${ssl_cert_dst}"
+    $target = "${ldap::params::cacertdir}/`${cmd}`.0"
     exec { "Server certificate hash":
       command => "ln -s ${ssl_cert_dst} ${target}",
       unless  => "test -f ${target}",
