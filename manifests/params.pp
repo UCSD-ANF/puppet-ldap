@@ -9,7 +9,7 @@ class ldap::params {
   if  $::architecture != 'amd64'
   and $::architecture != 'x86_64'
   and $::architecture !~ /^i?[346]86/ {
-    fail("Architecture not supported (${::architecture})")
+    fail("Architecture unsupported (${::architecture})")
   }
 
   case $::osfamily {
@@ -22,12 +22,12 @@ class ldap::params {
       # $::osfamily-related checks later.
       if  $::operatingsystem == 'OVS'
       and $::operatingsystemrelease !~ /^[1-2]\./ {
-          fail("OS version not supported (${::operatingsystemrelease})")
+          fail("OS version unsupported (${::operatingsystemrelease})")
       } elsif $::operatingsystemrelease !~ /^[5-6]\./ {
-          fail("OS version not supported (${::operatingsystemrelease})")
+          fail("OS version unsupported (${::operatingsystemrelease})")
       }
     } default: {
-      fail("Operating system not supported (${::operatingsystem})")
+      fail("Operating system unsupported (${::operatingsystem})")
     }
   }
 

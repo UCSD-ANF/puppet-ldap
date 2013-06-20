@@ -1,7 +1,7 @@
   
 require 'spec_helper'
 
-describe 'ldap::server::master' do
+describe 'ldap::server::config' do
 
   oses = {
 
@@ -11,7 +11,7 @@ describe 'ldap::server::master' do
       :operatingsystemrelease => '7.0',
       :lsbdistid              => 'Debian',
       :lsbdistrelease         => '7.0',
-      :architecture           => 'x86_64',
+      :architecture           => 'i386',
 
 			:package      => 'slapd',
 			:prefix       => '/etc/ldap',
@@ -43,6 +43,7 @@ describe 'ldap::server::master' do
  
 		let(:facts) { { 
       :operatingsystem => oses[os][:operatingsystem],
+      :architecture    => oses[os][:architecture],
     } }
 		
 		describe "Running on #{os}" do
@@ -52,19 +53,23 @@ describe 'ldap::server::master' do
         :rootpw => 'asdqw',
       } }
     
-			it { should contain_class('ldap::server::config').with({
-        :type          => 'master',
-        :sync_attrs    => nil,
-        :sync_base     => nil,
-        :sync_bindpw   => nil,
-        :sync_filter   => nil,
-        :sync_interval => nil,
-        :sync_provider => nil,
-        :sync_rid      => nil,
-        :sync_scope    => nil,
-        :sync_type     => nil,
-        :sync_updatedn => nil,
-      } ) }
+			it { should include_class('ldap::params') }
+			it { should contain_service(oses[os][:service]) }
+			it { should contain_package(oses[os][:package]) }
+			it { should contain_file(oses[os][:cfg]) }
+
+			context 'Motd disabled (default)' do
+				it { should_not contain_motd__register('ldap::server::master') }
+			end
+      
+			context 'Motd enabled' do
+				let(:params) { {
+					:suffix => 'dc=example,dc=com',
+					:rootpw => 'asdqw',
+					:enable_motd => true 
+				} }
+				it { should contain_motd__register('ldap::server::master') }
+			end
 		end
 	end
 	
@@ -74,17 +79,10 @@ describe 'ldap::server::master' do
 			:suffix => 'dc=example,dc=com',
 			:rootpw => 'asdqw',
 		} }
-		it { expect { should raise_error(Puppet::Error, /^unsupported.*/) } }
-	end
-	describe "Running on unsupported Arch" do
-		let(:facts) { {
-      :operatingsystem => 'RedHat',
-      :architecture    => 'foo86',
-    } }
-		let(:params) { { 
-			:suffix => 'dc=example,dc=com',
-			:rootpw => 'asdqw',
-		} }
-		it { expect { should raise_error(Puppet::Error, /^unsupported.*/) } }
+		it {
+			expect {
+				should include_class('ldap::params')
+			}.to raise_error(Puppet::Error, /^supported.*/)
+		}
 	end
 end
