@@ -71,18 +71,25 @@ class ldap::server::config(
     if !$ssl_cert { fail("${msg_prefix} ssl_cert ${msg_suffix}") }
     if !$ssl_key  { fail("${msg_prefix} ssl_key  ${msg_suffix}") }
 
-    # Normalize ssl_prefix into this class's namespace.
-    $ssl_prefix   = $ldap::params::ssl_prefix
+    # Normalize cacertdir into this class's namespace.
+    $cacertdir   = $ldap::params::cacertdir
 
     # Allow users to define their own puppet resource or simple filename.
     if ( $ssl_ca =~ /^puppet\:/ ) {
       $ssl_ca_src = $ssl_ca
       $ssl_ca_dst = inline_template(
-        '<%= ssl_prefix %>/<%= File.basename(ssl_ca) %>')
+        '<%= cacertdir %>/<%= File.basename(ssl_ca) %>')
     } else {
       $ssl_ca_src = "puppet:///files/ldap/${ssl_ca}"
-      $ssl_ca_dst = "${ssl_prefix}/${ssl_ca}"
+      $ssl_ca_dst = "${cacertdir}/${ssl_ca}"
     }
+    $dirEnsure = $ensure ? {
+      present => directory,
+      default => absent,
+    }
+    file { $cacertdir :
+      ensure  => $dirEnsure,
+    }->
     file { 'ssl_ca':
       ensure  => $ensure,
       source  => $ssl_ca_src,
@@ -92,10 +99,10 @@ class ldap::server::config(
     if ( $ssl_key =~ /^puppet\:/ ) {
       $ssl_key_src = $ssl_key
       $ssl_key_dst = inline_template(
-        '<%= ssl_prefix %>/<%= File.basename(ssl_key) %>')
+        '<%= cacertdir %>/<%= File.basename(ssl_key) %>')
     } else {
       $ssl_key_src = "puppet:///files/ldap/${ssl_key}"
-      $ssl_key_dst = "${ssl_prefix}/${ssl_key}"
+      $ssl_key_dst = "${cacertdir}/${ssl_key}"
     }
     file { 'ssl_key':
       ensure  => $ensure,
@@ -107,10 +114,10 @@ class ldap::server::config(
     if ( $ssl_cert =~ /^puppet\:/ ) {
       $ssl_cert_src = $ssl_cert
       $ssl_cert_dst = inline_template(
-        '<%= ssl_prefix %>/<%= File.basename(ssl_cert) %>')
+        '<%= cacertdir %>/<%= File.basename(ssl_cert) %>')
     } else {
       $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
-      $ssl_cert_dst = "${ssl_prefix}/${ssl_cert}"
+      $ssl_cert_dst = "${cacertdir}/${ssl_cert}"
     }
     file { 'ssl_cert':
       ensure  => $ensure,

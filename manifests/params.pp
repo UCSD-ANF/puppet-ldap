@@ -38,7 +38,7 @@ class ldap::params {
   }
 
   # Set other variables by OS family.
-  $cacertdir = $::osfamily ? {
+  $cacertdir = $::osfamily ? { # migrate to /etc/pki/tls/certs ?
     'RedHat' => $::operatingsystemrelease ? {
       /^[125]\./ => '/etc/openldap/cacerts', # /^[15]\./ ?
       default    => '/etc/openldap/certs',
@@ -151,7 +151,6 @@ class ldap::params {
     'Suse'   => 'ldap',
     default  => 'slapd',
   }
-  $ssl_prefix = $cacertdir
 
   # SSL error messages used in a couple places.
   $ssl_msg_prefix = 'SSL enabled. You must specify'
