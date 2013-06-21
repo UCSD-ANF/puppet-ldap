@@ -54,7 +54,7 @@ class ldap::server::config(
   service { $ldap::params::service :
     ensure     => running,
     enable     => true,
-    #pattern    => $ldap::params::server_pattern,
+    pattern    => $ldap::params::server_pattern,
     require    => [
       Package[$ldap::params::server_package],
       File['server_config'],
