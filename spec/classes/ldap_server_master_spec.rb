@@ -11,7 +11,8 @@ describe 'ldap::server::master' do
       :operatingsystemrelease => '7.0',
       :lsbdistid              => 'Debian',
       :lsbdistrelease         => '7.0',
-      :architecture           => 'x86_64',
+      :architecture           => 'amd64',
+      :kernel                 => 'Linux',
 
 			:package      => 'slapd',
 			:prefix       => '/etc/ldap',
@@ -21,32 +22,35 @@ describe 'ldap::server::master' do
 			:server_group => 'openldap',
     },
 
-    'Redhat' => {
-      :operatingsystem        => 'Redhat',
-      :osfamily               => 'Redhat',
-      :operatingsystemrelease => '5.0',
-      :lsbdistid              => 'Redhat',
-      :lsbdistrelease         => '5.0',
+    'RedHat' => {
+      :operatingsystem        => 'RedHat',
+      :osfamily               => 'RedHat',
+      :operatingsystemrelease => '6.0',
+      :lsbdistid              => 'RedHat',
+      :lsbdistrelease         => '6.0',
       :architecture           => 'x86_64',
+      :kernel                 => 'Linux',
 
-			:package   => 'openldap-servers',
-			:prefix    => '/etc/openldap',
-			:cfg       => '/etc/openldap/slapd.conf',
-			:service   => 'slapd',
-			:server_owner => 'openldap',
-			:server_group => 'openldap',
+			:package      => 'openldap-servers',
+			:prefix       => '/etc/openldap',
+			:cfg          => '/etc/openldap/slapd.conf',
+			:service      => 'slapd',
+			:server_owner => 'ldap',
+			:server_group => 'ldap',
     }
 
   }
   
   oses.keys.each do |os|
  
-		let(:facts) { { 
-      :operatingsystem => oses[os][:operatingsystem],
-    } }
-		
 		describe "Running on #{os}" do
-
+      let(:facts) { { 
+        :architecture           => oses[os][:architecture],
+        :operatingsystem        => oses[os][:operatingsystem],
+        :operatingsystemrelease => oses[os][:operatingsystemrelease],
+        :osfamily               => oses[os][:osfamily],
+        :kernel                 => oses[os][:kernel],
+      } }
       let(:params) { { 
         :suffix => 'dc=example,dc=com',
         :rootpw => 'asdqw',
@@ -69,17 +73,11 @@ describe 'ldap::server::master' do
 	end
 	
 	describe "Running on unsupported OS" do
-		let(:facts) { { :operatingsystem => 'solaris' } }
-		let(:params) { { 
-			:suffix => 'dc=example,dc=com',
-			:rootpw => 'asdqw',
-		} }
-		it { expect { should raise_error(Puppet::Error, /^unsupported.*/) } }
-	end
-	describe "Running on unsupported Arch" do
 		let(:facts) { {
-      :operatingsystem => 'RedHat',
-      :architecture    => 'foo86',
+      :operatingsystem => 'Solaris',
+      :osfamily        => 'Solaris',
+      :kernel          => 'SunOS',
+      :architecture    => 'sun4v',
     } }
 		let(:params) { { 
 			:suffix => 'dc=example,dc=com',

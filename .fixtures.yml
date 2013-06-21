@@ -1,5 +1,9 @@
 fixtures:
   repositories:
-    stdlib: git://github.com/puppetlabs/puppetlabs-stdlib.git
+    concat:   https://github.com/ripienaar/puppet-concat.git
+    motd:     https://github.com/torian/puppet-motd.git
+    nsswitch: https://github.com/torian/puppet-nsswitch.git
+    pam:      https://github.com/torian/puppet-pam.git
+    stdlib:   git://github.com/puppetlabs/puppetlabs-stdlib.git
   symlinks:
     ldap: "#{source_dir}"

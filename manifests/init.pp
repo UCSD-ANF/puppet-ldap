@@ -107,29 +107,29 @@
 # === Examples
 #
 # class { 'ldap':
-#	uri  => 'ldap://ldapserver00 ldap://ldapserver01',
-#	base => 'dc=suffix',
+#   uri  => 'ldap://ldapserver00 ldap://ldapserver01',
+#   base => 'dc=suffix',
 # }
 #
 # class { 'ldap':
-#	uri  => 'ldap://ldapserver00',
-#	base => 'dc=suffix',
-#	ssl  => true,
-#	ssl_cert => 'ldapserver00.pem'
+#   uri  => 'ldap://ldapserver00',
+#   base => 'dc=suffix',
+#   ssl  => true,
+#   ssl_cert => 'ldapserver00.pem'
 # }
 #
 # class { 'ldap':
-#	uri        => 'ldap://ldapserver00',
-#	base       => 'dc=suffix',
-#	ssl        => true,
-#	ssl_cert => 'ldapserver00.pem'
+#   uri        => 'ldap://ldapserver00',
+#   base       => 'dc=suffix',
+#   ssl        => true,
+#   ssl_cert => 'ldapserver00.pem'
 #
-#	nsswitch   => true,
-#	nss_passwd => 'ou=users',
-#	nss_shadow => 'ou=users',
-#	nss_group  => 'ou=groups',
+#   nsswitch   => true,
+#   nss_passwd => 'ou=users',
+#   nss_shadow => 'ou=users',
+#   nss_group  => 'ou=groups',
 #
-#	pam        => true,
+#   pam        => true,
 # }
 #
 #
@@ -186,11 +186,12 @@ class ldap(
     group   => $ldap::params::group,
   }
 
-  file { "${ldap::params::prefix}":
-    ensure  => $ensure ? {
-                  present => directory,
-                  default => absent,
-                },
+  $dirEnsure = $ensure ? {
+    present => directory,
+    default => absent,
+  }
+  file { $ldap::params::prefix :
+    ensure  => $dirEnsure,
     require => Package[$ldap::params::package],
   }
 
@@ -215,7 +216,7 @@ class ldap(
     if ( $ssl_cert =~ /^puppet\:/ ) {
       $ssl_cert_src = $ssl_cert
       $ssl_cert_dst = inline_template(
-        "<%= ssl_prefix %>/<%= File.basename(ssl_cert) %>")
+        '<%= ssl_prefix %>/<%= File.basename(ssl_cert) %>')
     } else {
       $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
       $ssl_cert_dst = "${ssl_prefix}/${ssl_cert}"
@@ -230,7 +231,7 @@ class ldap(
     # Symlink certificate to a filename based on the cert hash.
     $cmd    = "openssl x509 -noout -hash -in ${ssl_cert_dst}"
     $target = "${ldap::params::cacertdir}/`${cmd}`.0"
-    exec { "Server certificate hash":
+    exec { 'Server certificate hash':
       command => "ln -s ${ssl_cert_dst} ${target}",
       unless  => "test -f ${target}",
       require => File['ssl_client_cert'],
@@ -239,13 +240,14 @@ class ldap(
 
   # require module nsswitch
   if($nsswitch == true) {
+    $module_type = $ensure ? {
+      'present' => 'ldap',
+      default   => 'none'
+    }
     class { 'nsswitch':
       uri         => $uri,
       base        => $base,
-      module_type => $ensure ? {
-        'present' => 'ldap',
-        default   => 'none'
-      },
+      module_type => $module_type,
     }
   }
 

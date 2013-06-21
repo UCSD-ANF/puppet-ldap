@@ -3,43 +3,71 @@ require 'spec_helper'
 
 describe 'ldap' do
 
-	opts = {
-		'Debian' => {
-			:arch      => 'amd64',
-			:package   => 'ldap-utils',
-			:ldapcfg   => '/etc/ldap/ldap.conf',
-			:cacertdir => '/etc/ssl/certs',
-			:ssl_cert  => 'ldap.pem',
-		},
-		'Redhat' => {
-			:arch      => 'x86_64',
-			:package   => 'openldap-clients',
-			:ldapcfg   => '/etc/openldap/ldap.conf',
-			:cacertdir => '/etc/openldap/cacerts',
-			:ssl_cert  => 'ldap.pem',
-		},
-		'CentOS' => {
-			:arch      => 'x86_64',
-			:package   => 'openldap-clients',
-			:ldapcfg   => '/etc/openldap/ldap.conf',
-			:cacertdir => '/etc/openldap/cacerts',
-			:ssl_cert  => 'ldap.pem',
-		}
-	} 
-	
-	opts.keys.each do |os|
+	oses = {
+    'Debian' => {
+      :operatingsystem        => 'Debian',
+      :osfamily               => 'Debian',
+      :operatingsystemrelease => '7.0',
+      :lsbdistid              => 'Debian',
+      :lsbdistrelease         => '7.0',
+      :architecture           => 'i386',
+      :kernel                 => 'Linux',
+
+			:package       => 'ldap-utils',
+			:prefix        => '/etc/ldap',
+			:cfg           => '/etc/ldap/ldap.conf',
+			:cacertdir     => '/etc/ssl/certs',
+			:ssl_cert      => 'ldapserver00.pem',
+    },
+    'CentOS' => {
+      :operatingsystem        => 'CentOS',
+      :osfamily               => 'RedHat',
+      :operatingsystemrelease => '5.0',
+      :lsbdistid              => 'CentOS',
+      :lsbdistrelease         => '5.0',
+      :architecture           => 'x86_64',
+      :kernel                 => 'Linux',
+
+			:package       => 'openldap-clients',
+			:prefix        => '/etc/openldap',
+			:cfg           => '/etc/openldap/ldap.conf',
+			:cacertdir     => '/etc/openldap/cacerts',
+			:ssl_cert      => 'ldapserver00.pem',
+    },
+    'RedHat' => {
+      :operatingsystem        => 'RedHat',
+      :osfamily               => 'RedHat',
+      :operatingsystemrelease => '6.0',
+      :lsbdistid              => 'RedHat',
+      :lsbdistrelease         => '6.0',
+      :architecture           => 'x86_64',
+      :kernel                 => 'Linux',
+
+			:package       => 'openldap-clients',
+			:prefix        => '/etc/openldap',
+			:cfg           => '/etc/openldap/ldap.conf',
+			:cacertdir     => '/etc/openldap/certs',
+			:ssl_cert      => 'ldapserver00.pem',
+    }
+  }
+
+	oses.keys.each do |os|
 		describe "Running on #{os}" do
-			let(:facts) { {
-				:operatingsystem => os,
-				:architecture    => opts[os][:arch],
-			} }
+      let(:facts) {{
+        :operatingsystem        => oses[os][:operatingsystem],
+        :osfamily               => oses[os][:osfamily],
+        :operatingsystemrelease => oses[os][:operatingsystemrelease],
+        :architecture           => oses[os][:architecture],
+        :kernel                 => oses[os][:kernel],
+      }}
 			let(:params) { { 
 				:uri  => 'ldap://ldap.example.com',
 				:base => 'dc=suffix',
 			} }
 			it { should include_class('ldap::params') }
-			it { should contain_package(opts[os][:package]) }
-			it { should contain_file(opts[os][:ldapcfg]) }
+			it { should contain_package(oses[os][:package]) }
+			it { should contain_file('client_config'
+                              ).with_path(oses[os][:cfg]) }
 
 			context 'Motd disabled (default)' do
 				it { should_not contain_motd__register('ldap') }
@@ -58,9 +86,11 @@ describe 'ldap' do
 					:uri      => 'ldap://ldap.example.com',
 					:base     => 'dc=suffix',
 					:ssl      => true,
-					:ssl_cert => opts[os][:ssl_cert],
+					:ssl_cert => oses[os][:ssl_cert],
 				} }
-				it { should contain_file("#{opts[os][:cacertdir]}/#{opts[os][:ssl_cert]}") } 
+				it { should contain_file(
+          'ssl_client_cert').with_path(
+          "#{oses[os][:cacertdir]}/#{oses[os][:ssl_cert]}") } 
 			end
 
 			context 'SSL Enabled without certificate' do
@@ -70,8 +100,9 @@ describe 'ldap' do
 					:ssl      => true,
 				} }
 				it { expect {
-					should contain_file("#{opts[os][:cacertdir]}/#{opts[os][:ssl_cert]}") 
-					}.to raise_error(Puppet::Error, /^When ssl is.*/)
+					should contain_file(
+            'ssl_client_cert').with_path("")
+					}.to raise_error(Puppet::Error, /must specify ssl_.*/)
 				}
 			end
 		end

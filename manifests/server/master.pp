@@ -136,9 +136,9 @@ class ldap::server::master(
 ) {
   # Call parameterized server config class.
   class { 'ldap::server::config' :
+    ensure              => $ensure,
     bind_anon           => $bind_anon,
     enable_motd         => $enable_motd,
-    ensure              => $ensure,
     index_inc           => $index_inc,
     log_level           => $log_level,
     modules_inc         => $modules_inc,

@@ -47,14 +47,14 @@ class ldap::server::config(
     motd::register { "ldap::server::${type}": }
   }
 
-  package { $ldap::params::server_package:
+  package { $ldap::params::server_package :
     ensure => $ensure,
   }
 
-  service { $ldap::params::service:
+  service { $ldap::params::service :
     ensure     => running,
     enable     => true,
-    pattern    => $ldap::params::server_pattern,
+    #pattern    => $ldap::params::server_pattern,
     require    => [
       Package[$ldap::params::server_package],
       File['server_config'],
@@ -78,7 +78,7 @@ class ldap::server::config(
     if ( $ssl_ca =~ /^puppet\:/ ) {
       $ssl_ca_src = $ssl_ca
       $ssl_ca_dst = inline_template(
-        "<%= ssl_prefix %>/<%= File.basename(ssl_ca) %>")
+        '<%= ssl_prefix %>/<%= File.basename(ssl_ca) %>')
     } else {
       $ssl_ca_src = "puppet:///files/ldap/${ssl_ca}"
       $ssl_ca_dst = "${ssl_prefix}/${ssl_ca}"
@@ -92,7 +92,7 @@ class ldap::server::config(
     if ( $ssl_key =~ /^puppet\:/ ) {
       $ssl_key_src = $ssl_key
       $ssl_key_dst = inline_template(
-        "<%= ssl_prefix %>/<%= File.basename(ssl_key) %>")
+        '<%= ssl_prefix %>/<%= File.basename(ssl_key) %>')
     } else {
       $ssl_key_src = "puppet:///files/ldap/${ssl_key}"
       $ssl_key_dst = "${ssl_prefix}/${ssl_key}"
@@ -107,12 +107,12 @@ class ldap::server::config(
     if ( $ssl_cert =~ /^puppet\:/ ) {
       $ssl_cert_src = $ssl_cert
       $ssl_cert_dst = inline_template(
-        "<%= ssl_prefix %>/<%= File.basename(ssl_cert) %>")
+        '<%= ssl_prefix %>/<%= File.basename(ssl_cert) %>')
     } else {
       $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
       $ssl_cert_dst = "${ssl_prefix}/${ssl_cert}"
     }
-    file { "ssl_cert":
+    file { 'ssl_cert':
       ensure  => $ensure,
       source  => $ssl_cert_src,
       path    => $ssl_cert_dst,
@@ -123,7 +123,7 @@ class ldap::server::config(
     # Symlink certificate to a filename based on the cert hash.
     $cmd = "openssl x509 -noout -hash -in ${ssl_cert_dst}"
     $target = "${ldap::params::cacertdir}/`${cmd}`.0"
-    exec { "Server certificate hash":
+    exec { 'Server certificate hash':
       command => "ln -s ${ssl_cert_dst} ${target}",
       unless  => "test -f ${target}",
       require => File['ssl_cert'],

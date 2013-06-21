@@ -136,18 +136,18 @@
 # === Examples
 #
 # class { 'ldap::server::master':
-#	suffix      => 'dc=foo,dc=bar',
-#	rootpw      => '{SHA}iEPX+SQWIR3p67lj/0zigSWTKHg=',
-#	syncprov    => true,
-#	sync_binddn => 'cn=sync,dc=foo,dc=bar',
-#	modules_inc => [ 'syncprov' ],
-#	schema_inc  => [ 'gosa/samba3', 'gosa/gosystem' ],
-#	index_inc   => [
-#		'index memberUid            eq',
-#		'index mail                 eq',
-#		'index givenName            eq,subinitial',
-#		],
-#	}
+#   suffix      => 'dc=foo,dc=bar',
+#   rootpw      => '{SHA}iEPX+SQWIR3p67lj/0zigSWTKHg=',
+#   syncprov    => true,
+#   sync_binddn => 'cn=sync,dc=foo,dc=bar',
+#   modules_inc => [ 'syncprov' ],
+#   schema_inc  => [ 'gosa/samba3', 'gosa/gosystem' ],
+#   index_inc   => [
+#       'index memberUid            eq',
+#       'index mail                 eq',
+#       'index givenName            eq,subinitial',
+#   ],
+# }
 #
 # === Authors
 #
@@ -188,9 +188,9 @@ class ldap::server::slave(
 ) {
   # Call parameterized server config class.
   class { 'ldap::server::config':
+    ensure          => $ensure,
     bind_anon       => $bind_anon,
     enable_motd     => $enable_motd,
-    ensure          => $ensure,
     index_inc       => $index_inc,
     log_level       => $log_level,
     modules_inc     => $modules_inc,

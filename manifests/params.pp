@@ -18,12 +18,12 @@ class ldap::params {
     } 'RedHat': {
       # OVS release versions are offset from other variants by 4.
       # We'll reject other RedHat versions lower than 5, here, so
-      # that we can match [1-5] and/or (1|5) for some
+      # that we can match [125] and/or [15] for some
       # $::osfamily-related checks later.
       if  $::operatingsystem == 'OVS'
-      and $::operatingsystemrelease !~ /^[1-2]\./ {
+      and $::operatingsystemrelease !~ /^[12]\./ {
           fail("OS version unsupported (${::operatingsystemrelease})")
-      } elsif $::operatingsystemrelease !~ /^[5-6]\./ {
+      } elsif $::operatingsystemrelease !~ /^[56]\./ {
           fail("OS version unsupported (${::operatingsystemrelease})")
       }
     } default: {
@@ -40,7 +40,7 @@ class ldap::params {
   # Set other variables by OS family.
   $cacertdir = $::osfamily ? {
     'RedHat' => $::operatingsystemrelease ? {
-      /^[1-5]\./ => '/etc/openldap/cacerts', # /^(1|5)\./ ?
+      /^[125]\./ => '/etc/openldap/cacerts', # /^[15]\./ ?
       default    => '/etc/openldap/certs',
     },
     default  => '/etc/ssl/certs',
@@ -53,7 +53,7 @@ class ldap::params {
   }
   $group = $::osfamily ? {
     'RedHat' => $::operatingsystemrelease ? {
-      /^[1-5]\./ => 'root', # /^(1|5)\./ ?
+      /^[125]\./ => 'root', # /^[15]\./ ?
       default    => 'ldap',
     },
     default  => 'root',
@@ -91,15 +91,15 @@ class ldap::params {
   }
   $owner = $::osfamily ? {
     'RedHat' => $::operatingsystemrelease ? {
-      /^[1-5]\./ => 'root', # /^(1|5)\./ ?
+      /^[125]\./ => 'root', # /^[15]\./ ?
       default    => 'ldap',
     },
     default  => 'root',
   }
   $package = $::osfamily ? {
-    'Debian' => [ 'ldap-utils' ],
-    'Suse'   => [ 'openldap2-client' ],
-    default  => [ 'openldap', 'openldap-clients' ],
+    'Debian' => [ 'ldap-utils', ],
+    'Suse'   => [ 'openldap2-client', ],
+    default  => [ 'openldap', 'openldap-clients', ],
   }
   $prefix = $::osfamily ? {
     'Debian' => '/etc/ldap',
@@ -114,7 +114,7 @@ class ldap::params {
   $server_group = $::osfamily ? {
     'Debian' => 'openldap',
     'RedHat' => $::operatingsystemrelease ? {
-      /^5\./  => 'root', # /^(1|5)\./ ?
+      /^5\./  => 'root', # /^[15]\./ ?
       default => 'ldap',
     },
     default  => 'root',
@@ -122,15 +122,15 @@ class ldap::params {
   $server_owner = $::osfamily ? {
     'Debian' => 'openldap',
     'RedHat' => $::operatingsystemrelease ? {
-      /^5\./  => 'root', # /^(1|5)\./ ?
+      /^5\./  => 'root', # /^[15]\./ ?
       default => 'ldap',
     },
     default  => 'root',
   }
   $server_package = $::osfamily ? {
-    'Debian' => [ 'slapd' ],
-    'Suse'   => [ 'openldap2' ],
-    default  => [ 'openldap-servers' ],
+    'Debian' => [ 'slapd', ],
+    'Suse'   => [ 'openldap2', ],
+    default  => [ 'openldap-servers', ],
   }
   $server_pattern = $::osfamily ? {
     default  => 'slapd',
