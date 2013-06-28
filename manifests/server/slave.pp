@@ -66,7 +66,7 @@
 #
 #  [log_file]
 #    OpenLdap server log file.
-#    *Optional* (defaults to /var/log/slapd.log)
+#    *Optional* (defaults to /var/log/slapd/slapd.log)
 #
 #  [log_level]
 #    OpenLdap server log level.
@@ -175,7 +175,7 @@ class ldap::server::slave(
   $schema_inc     = [],
   $modules_inc    = [],
   $index_inc      = [],
-  $log_file       = '/var/log/slapd.log',
+  $log_file       = '/var/log/slapd/slapd.log',
   $log_level      = '0',
   $bind_anon      = true,
   $ssl            = false,

@@ -152,4 +152,11 @@ class ldap::server::config(
     notify  => Service[$ldap::params::service],
     require => Package[$ldap::params::server_package],
   }
+
+  # Create default log dir.
+  file { '/var/log/slapd':
+    ensure  => $dirEnsure,
+    notify  => Service[$ldap::params::service],
+    require => Package[$ldap::params::server_package],
+  }
 }
