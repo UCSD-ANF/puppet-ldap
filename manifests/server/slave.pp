@@ -76,6 +76,17 @@
 #    Allow anonymous binding
 #    *Optional* (defaults to true)
 #
+#  [ldapi]
+#
+#    Turn on ldapi:// (RedHat variants only).
+#    *Optional* (defaults to defaults to false)
+#
+#  [noldap]
+#
+#    Turn off ldap:// (RedHat variants only).
+#    *Requires* ldapi or ssl to be true.
+#    *Optional* (defaults to defaults to false)
+#
 #  [ssl]
 #    Enable SSL/TLS.
 #    *Requires*: ssl_{cert,ca,key} parameter
@@ -178,6 +189,8 @@ class ldap::server::slave(
   $log_file       = '/var/log/slapd/slapd.log',
   $log_level      = '0',
   $bind_anon      = true,
+  $ldapi          = false,
+  $noldap         = false,
   $ssl            = false,
   $ssl_ca         = false,
   $ssl_cert       = false,
@@ -193,32 +206,34 @@ class ldap::server::slave(
 ) {
   # Call parameterized server config class.
   class { 'ldap::server::config':
-    ensure          => $ensure,
-    bind_anon       => $bind_anon,
-    enable_motd     => $enable_motd,
-    index_inc       => $index_inc,
-    log_file        => $log_file,
-    log_level       => $log_level,
-    modules_inc     => $modules_inc,
-    rootdn          => $rootdn,
-    rootpw          => $rootpw,
-    schema_inc      => $schema_inc,
-    ssl             => $ssl,
-    ssl_ca          => $ssl_ca,
-    ssl_cert        => $ssl_cert,
-    ssl_key         => $ssl_key,
-    suffix          => $suffix,
-    sync_attrs      => $sync_attrs,
-    sync_base       => $sync_base,
-    sync_binddn     => $sync_binddn,
-    sync_bindpw     => $sync_bindpw,
-    sync_filter     => $sync_filter,
-    sync_interval   => $sync_interval,
-    sync_provider   => $sync_provider,
-    sync_rid        => $sync_rid,
-    sync_scope      => $sync_scope,
-    sync_type       => $sync_type,
-    sync_updatedn   => $sync_updatedn,
-    type            => 'slave',
+    ensure        => $ensure,
+    bind_anon     => $bind_anon,
+    enable_motd   => $enable_motd,
+    index_inc     => $index_inc,
+    ldapi         => $ldapi,
+    log_file      => $log_file,
+    log_level     => $log_level,
+    modules_inc   => $modules_inc,
+    noldap        => $noldap,
+    rootdn        => $rootdn,
+    rootpw        => $rootpw,
+    schema_inc    => $schema_inc,
+    ssl           => $ssl,
+    ssl_ca        => $ssl_ca,
+    ssl_cert      => $ssl_cert,
+    ssl_key       => $ssl_key,
+    suffix        => $suffix,
+    sync_attrs    => $sync_attrs,
+    sync_base     => $sync_base,
+    sync_binddn   => $sync_binddn,
+    sync_bindpw   => $sync_bindpw,
+    sync_filter   => $sync_filter,
+    sync_interval => $sync_interval,
+    sync_provider => $sync_provider,
+    sync_rid      => $sync_rid,
+    sync_scope    => $sync_scope,
+    sync_type     => $sync_type,
+    sync_updatedn => $sync_updatedn,
+    type          => 'slave',
   }
 }
