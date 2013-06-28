@@ -92,7 +92,7 @@ class ldap::params {
   $owner = $::osfamily ? {
     'RedHat' => $::operatingsystemrelease ? {
       /^[125]\./ => 'root', # /^[15]\./ ?
-      default    => 'ldap',
+      default    => 'nslcd',
     },
     default  => 'root',
   }
