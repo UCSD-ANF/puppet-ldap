@@ -15,6 +15,7 @@ class ldap::server::config(
   $schema_inc,
   $modules_inc,
   $index_inc,
+  $log_file,
   $log_level,
   $bind_anon,
   $ssl,

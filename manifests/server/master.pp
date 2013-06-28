@@ -30,6 +30,10 @@
 #
 #    *Optional* (defaults to [])
 #
+#  [log_file]
+#
+#    *Optional* (defaults to /var/log/slapd.conf)
+#
 #  [log_level]
 #
 #    *Optional* (defaults to 0)
@@ -121,6 +125,7 @@ class ldap::server::master(
   $schema_inc          = [],
   $modules_inc         = [],
   $index_inc           = [],
+  $log_file            = '/var/log/slapd.log',
   $log_level           = '0',
   $bind_anon           = true,
   $ssl                 = false,
@@ -140,6 +145,7 @@ class ldap::server::master(
     bind_anon           => $bind_anon,
     enable_motd         => $enable_motd,
     index_inc           => $index_inc,
+    log_file            => $log_file,
     log_level           => $log_level,
     modules_inc         => $modules_inc,
     rootdn              => $rootdn,

@@ -21,8 +21,10 @@ include		<%= scope.lookupvar('ldap::params::schema_prefix') %>/<%= schema %>.sch
 pidfile         <%= scope.lookupvar('ldap::params::server_run') %>/slapd.pid
 argsfile        <%= scope.lookupvar('ldap::params::server_run') %>/slapd.args
 
+# Set logging.  Nothing will be logged logfile unless logfile is set up.
 # Read slapd.conf(5) for possible values
 loglevel	<%= log_level %>
+logfile         <%= log_file %>
 
 modulepath	<%= scope.lookupvar('ldap::params::module_prefix') %>
 <% scope.lookupvar('ldap::params::modules_base').each do |mod| -%>

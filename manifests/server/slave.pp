@@ -64,6 +64,10 @@
 #         'index displayName  pres,sub,eq',
 #    *Optional* (defaults to [])
 #
+#  [log_file]
+#    OpenLdap server log file.
+#    *Optional* (defaults to /var/log/slapd.log)
+#
 #  [log_level]
 #    OpenLdap server log level.
 #    *Optional* (defaults to 0)
@@ -171,6 +175,7 @@ class ldap::server::slave(
   $schema_inc     = [],
   $modules_inc    = [],
   $index_inc      = [],
+  $log_file       = '/var/log/slapd.log',
   $log_level      = '0',
   $bind_anon      = true,
   $ssl            = false,
@@ -192,6 +197,7 @@ class ldap::server::slave(
     bind_anon       => $bind_anon,
     enable_motd     => $enable_motd,
     index_inc       => $index_inc,
+    log_file        => $log_file,
     log_level       => $log_level,
     modules_inc     => $modules_inc,
     rootdn          => $rootdn,
