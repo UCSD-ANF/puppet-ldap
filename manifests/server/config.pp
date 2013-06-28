@@ -46,6 +46,11 @@ class ldap::server::config(
     fail("${name} expects type=master or type=slave.")
   }
 
+  # Confirm we're at least running one service port.
+  if $ldap == false and $ldapi == false and $ssl == false {
+    fail("${name} needs at least one of ldap:// ldapi:// or ldaps:// to be on.")
+  }
+
   if($enable_motd) {
     motd::register { "ldap::server::${type}": }
   }
