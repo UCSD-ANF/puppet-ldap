@@ -18,8 +18,8 @@ class ldap::server::config(
   $log_file,
   $log_level,
   $bind_anon,
+  $ldap,
   $ldapi,
-  $noldap,
   $ssl,
   $ssl_ca,
   $ssl_cert,
@@ -162,18 +162,15 @@ class ldap::server::config(
     require => Package[$ldap::params::server_package],
   }
 
-  # Manage some OS-specific files
-  case $::osfamily {
-    'RedHat': {
-      file { '/etc/sysconfig/ldap':
-        ensure  => $ensure,
-        content => template('ldap/redhat.defaults.erb'),
-        notify  => Service[$ldap::params::service],
-        require => Package[$ldap::params::server_package],
-      }
-    # FUTURE: should support Debian's /etc/default file, too.
-    } default: {
-      warning("Not managing default settings for ${::operatingsystem}.")
+  # Manage OS-specific defaults, if we can.
+  if $site::params::slapd_defaults {
+    $slapd_var = $site::params::slapd_var
+    $slapd_defaults = $site::params::slapd_defaults
+    file { $slapd_defaults :
+      ensure  => $ensure,
+      content => template('ldap/defaults.erb'),
+      notify  => Service[$ldap::params::service],
+      require => Package[$ldap::params::server_package],
     }
   }
 }

@@ -151,6 +151,16 @@ class ldap::params {
     'Suse'   => 'ldap',
     default  => 'slapd',
   }
+  $slapd_var = $::osfamily ? {
+    'Debian' => 'SLAPD_SERVICES',
+    'RedHat' => 'SLAPD_URLS',
+    default  => undef,
+  }
+  $slapd_defaults = $::osfamily ? {
+    'Debian' => '/etc/default/slapd',
+    'RedHat' => '/etc/sysconfig/ldap',
+    default  => undef,
+  }
 
   # SSL error messages used in a couple places.
   $ssl_msg_prefix = 'SSL enabled. You must specify'

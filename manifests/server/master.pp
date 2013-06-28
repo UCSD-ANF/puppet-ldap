@@ -42,16 +42,16 @@
 #
 #    *Optional* (defaults to true)
 #
-#  [ldapi]
-#
-#    Turn on ldapi:// (RedHat variants only).
-#    *Optional* (defaults to defaults to false)
-#
-#  [noldap]
+#  [ldap]
 #
 #    Turn off ldap:// (RedHat variants only).
 #    *Requires* ldapi or ssl to be true.
-#    *Optional* (defaults to defaults to false)
+#    *Optional* (defaults to defaults to true)
+#
+#  [ldapi]
+#
+#    Turn on ldapi:// (RedHat variants only).
+#    *Optional* (defaults to defaults to true)
 #
 #  [ssl]
 #
@@ -140,8 +140,8 @@ class ldap::server::master(
   $log_file            = '/var/log/slapd/slapd.log',
   $log_level           = '0',
   $bind_anon           = true,
+  $ldap                = false,
   $ldapi               = false,
-  $noldap              = false,
   $ssl                 = false,
   $ssl_ca              = false,
   $ssl_cert            = false,
@@ -159,11 +159,11 @@ class ldap::server::master(
     bind_anon           => $bind_anon,
     enable_motd         => $enable_motd,
     index_inc           => $index_inc,
+    ldap                => $ldap,
     ldapi               => $ldapi,
     log_file            => $log_file,
     log_level           => $log_level,
     modules_inc         => $modules_inc,
-    noldap               => $noldap,
     rootdn              => $rootdn,
     rootpw              => $rootpw,
     schema_inc          => $schema_inc,
