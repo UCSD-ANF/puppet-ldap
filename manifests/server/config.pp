@@ -168,12 +168,12 @@ class ldap::server::config(
   }
 
   # Manage OS-specific defaults, if we can.
-  if $site::params::slapd_defaults {
-    $slapd_var = $site::params::slapd_var
-    $slapd_defaults = $site::params::slapd_defaults
+  if $ldap::params::slapd_defaults {
+    $slapd_var      = $ldap::params::slapd_var
+    $slapd_defaults = $ldap::params::slapd_defaults
     file { $slapd_defaults :
       ensure  => $ensure,
-      content => template('ldap/defaults.erb'),
+      content => template('ldap/slapd_defaults.erb'),
       notify  => Service[$ldap::params::service],
       require => Package[$ldap::params::server_package],
     }

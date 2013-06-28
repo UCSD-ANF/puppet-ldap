@@ -1,0 +1,8 @@
+# Options of slapd (see man slapd)
+<%-
+s = []
+s.push('ldap:///')  if @ldap  && ldap==true
+s.push('ldapi:///') if @ldapi && ldapi==true
+s.push('ldaps:///') if @ssl   && ssl==true
+-%>
+<%= slapd_var %>="<%= s.join(' ') %>"
