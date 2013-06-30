@@ -17,6 +17,7 @@ describe 'ldap' do
 			:prefix        => '/etc/ldap',
 			:cfg           => '/etc/ldap/ldap.conf',
 			:cacertdir     => '/etc/ssl/certs',
+			:ssl_prefix    => '/etc/ssl/certs',
 			:ssl_cert      => 'ldapserver00.pem',
     },
     'CentOS' => {
@@ -31,7 +32,8 @@ describe 'ldap' do
 			:package       => 'openldap-clients',
 			:prefix        => '/etc/openldap',
 			:cfg           => '/etc/openldap/ldap.conf',
-			:cacertdir     => '/etc/openldap/cacerts',
+			:cacertdir     => '/etc/openldap',
+			:ssl_prefix    => '/etc/pki/tls/misc',
 			:ssl_cert      => 'ldapserver00.pem',
     },
     'RedHat' => {
@@ -46,7 +48,8 @@ describe 'ldap' do
 			:package       => 'openldap-clients',
 			:prefix        => '/etc/openldap',
 			:cfg           => '/etc/openldap/ldap.conf',
-			:cacertdir     => '/etc/openldap/certs',
+			:cacertdir     => '/etc/openldap',
+			:ssl_prefix    => '/etc/pki/tls/misc',
 			:ssl_cert      => 'ldapserver00.pem',
     }
   }

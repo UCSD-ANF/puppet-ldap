@@ -181,39 +181,15 @@ class ldap(
 
   # Conditionally set up SSL before we call any templates.
   if $ssl {
-    $msg_prefix = $ldap::params::ssl_msg_prefix
-    $msg_suffix = $ldap::params::ssl_msg_suffix
-
-    # Fail early.
-    if !$ssl_cert { fail("${msg_prefix} ssl_cert ${msg_suffix}") }
-
-    # Normalize a couple parameters into this class's namespace.
-    $cacertdir   = $ldap::params::cacertdir
-
-    # Allow users to define their own puppet resource or simple filename.
-    if ( $ssl_cert =~ /^puppet\:/ ) {
-      $ssl_cert_src = $ssl_cert
-      $ssl_cert_dst = inline_template(
-        '<%= cacertdir %>/<%= File.basename(ssl_cert) %>')
-    } else {
-      $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
-      $ssl_cert_dst = "${cacertdir}/${ssl_cert}"
+    if !$ssl_cert {
+      fail("must specify ssl_cert (got '${sslcert}')")
     }
-    file { 'ssl_client_cert':
-      ensure => $ensure,
-      source => $ssl_cert_src,
-      path   => $ssl_cert_dst,
-      before => File['client_config'],
+    # Install $ssl_cert virtually in case we're a client and server.
+    @ldap::ssl_install { $ssl_cert :
+      ensure  => $ensure,
+      require => $ldap::params::package,
     }
-
-    # Symlink certificate to a filename based on the cert hash.
-    $cmd    = "openssl x509 -noout -hash -in ${ssl_cert_dst}"
-    $target = "${ldap::params::cacertdir}/`${cmd}`.0"
-    exec { 'Server certificate hash':
-      command => "ln -s ${ssl_cert_dst} ${target}",
-      unless  => "test -f ${target}",
-      require => File['ssl_client_cert'],
-    }
+    realize( Ldap::Ssl_install[$ssl_cert] )
   }
 
   File {

@@ -69,89 +69,40 @@ class ldap::server::config(
       ],
   }
 
-  # Conditionally set up SSL before we call our template.
-  if $ssl {
-    $msg_prefix = $ldap::params::ssl_msg_prefix
-    $msg_suffix = $ldap::params::ssl_msg_suffix
-
-    # Fail early.
-    if !$ssl_ca   { fail("${msg_prefix} ssl_ca   ${msg_suffix}") }
-    if !$ssl_cert { fail("${msg_prefix} ssl_cert ${msg_suffix}") }
-    if !$ssl_key  { fail("${msg_prefix} ssl_key  ${msg_suffix}") }
-
-    # Normalize cacertdir into this class's namespace.
-    $cacertdir   = $ldap::params::cacertdir
-
-    # Allow users to define their own puppet resource or simple filename.
-    if ( $ssl_ca =~ /^puppet\:/ ) {
-      $ssl_ca_src = $ssl_ca
-      $ssl_ca_dst = inline_template(
-        '<%= cacertdir %>/<%= File.basename(ssl_ca) %>')
-    } else {
-      $ssl_ca_src = "puppet:///files/ldap/${ssl_ca}"
-      $ssl_ca_dst = "${cacertdir}/${ssl_ca}"
-    }
-    $dirEnsure = $ensure ? {
-      present => directory,
-      default => absent,
-    }
-    file { $cacertdir :
-      ensure  => $dirEnsure,
-    }->
-    file { 'ssl_ca':
-      ensure  => $ensure,
-      source  => $ssl_ca_src,
-      path    => $ssl_ca_dst,
-    }
-    # Allow users to define their own puppet resource or simple filename.
-    if ( $ssl_key =~ /^puppet\:/ ) {
-      $ssl_key_src = $ssl_key
-      $ssl_key_dst = inline_template(
-        '<%= cacertdir %>/<%= File.basename(ssl_key) %>')
-    } else {
-      $ssl_key_src = "puppet:///files/ldap/${ssl_key}"
-      $ssl_key_dst = "${cacertdir}/${ssl_key}"
-    }
-    file { 'ssl_key':
-      ensure  => $ensure,
-      source  => $ssl_key_src,
-      path    => $ssl_key_dst,
-      require => File['ssl_ca'],
-    }
-    # Allow users to define their own puppet resource or simple filename.
-    if ( $ssl_cert =~ /^puppet\:/ ) {
-      $ssl_cert_src = $ssl_cert
-      $ssl_cert_dst = inline_template(
-        '<%= cacertdir %>/<%= File.basename(ssl_cert) %>')
-    } else {
-      $ssl_cert_src = "puppet:///files/ldap/${ssl_cert}"
-      $ssl_cert_dst = "${cacertdir}/${ssl_cert}"
-    }
-    file { 'ssl_cert':
-      ensure  => $ensure,
-      source  => $ssl_cert_src,
-      path    => $ssl_cert_dst,
-      require => File['ssl_key'],
-      before  => File['server_config'],
-    }
-
-    # Symlink certificate to a filename based on the cert hash.
-    $cmd = "openssl x509 -noout -hash -in ${ssl_cert_dst}"
-    $target = "${ldap::params::cacertdir}/`${cmd}`.0"
-    exec { 'Server certificate hash':
-      command => "ln -s ${ssl_cert_dst} ${target}",
-      unless  => "test -f ${target}",
-      require => File['ssl_cert'],
-    }
-  }
-
-  # Configure server.
   File {
     mode    => '0640',
     owner   => $ldap::params::server_owner,
     group   => $ldap::params::server_group,
   }
 
+  # Conditionally set up SSL before we call any templates.
+  if $ssl {
+    $msg_prefix = $ldap::params::ssl_msg_prefix
+    $msg_suffix = $ldap::params::ssl_msg_suffix
+    if !$ssl_ca   { fail("${msg_prefix} ssl_ca   ${msg_suffix}") }
+    if !$ssl_cert { fail("${msg_prefix} ssl_cert ${msg_suffix}") }
+    if !$ssl_key  { fail("${msg_prefix} ssl_key  ${msg_suffix}") }
+    ldap::ssl_install { $ssl_ca :
+      ensure => $ensure,
+      cacert => true,
+      notify => Service[$ldap::params::service],
+    }
+    ldap::ssl_install { $ssl_key :
+      ensure => $ensure,
+      cacert => true,
+      notify => Service[$ldap::params::service],
+    }
+
+    # Install $ssl_cert virtually in case we're a client and server.
+    @ldap::ssl_install { $ssl_cert :
+      ensure => $ensure,
+      cacert => false,
+      notify => Service[$ldap::params::service],
+    }
+    realize(Ldap::Ssl_install[$ssl_cert])
+  }
+
+  # Configure server.
   file { 'server_config':
     ensure  => $ensure,
     content => template("ldap/${ldap::params::server_config}.erb"),
@@ -169,8 +120,17 @@ class ldap::server::config(
 
   # Manage OS-specific defaults, if we can.
   if $ldap::params::slapd_defaults {
-    $slapd_var      = $ldap::params::slapd_var
-    $slapd_defaults = $ldap::params::slapd_defaults
+    $slapd_var       = $ldap::params::slapd_var
+    $slapd_defaults  = $ldap::params::slapd_defaults
+    $slapd_ldap      = $ldap  ? { true  => 'yes', false => 'no', }
+    $slapd_ldapi     = $ldapi ? { true  => 'yes', false => 'no', }
+    $slapd_ldaps     = $ssl   ? { true  => 'yes', false => 'no', }
+    $slapd_url_ldap  = $ldap  ? { true  => 'ldap:///', false => '', }
+    $slapd_url_ldapi = $ldapi ? { true  => 'ldapi:///', false => '', }
+    $slapd_url_ldaps = $ssl   ? { true  => 'ldaps:///', false => '', }
+    $slapd_url = join(
+      [$slapd_url_ldap,$slapd_url_ldapi,$slapd_url_ldaps,], ' ')
+
     file { $slapd_defaults :
       ensure  => $ensure,
       content => template('ldap/slapd_defaults.erb'),

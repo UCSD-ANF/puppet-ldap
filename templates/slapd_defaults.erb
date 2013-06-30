@@ -1,8 +1,8 @@
 # Options of slapd (see man slapd)
-<%-
-s = []
-s.push('ldap:///')  if @ldap  && ldap==true
-s.push('ldapi:///') if @ldapi && ldapi==true
-s.push('ldaps:///') if @ssl   && ssl==true
--%>
-<%= slapd_var %>="<%= s.join(' ') %>"
+<%- if scope.lookupvar('::osfamily') == 'RedHat': -%>
+SLAPD_LDAP=<%= slapd_ldap %>
+SLAPD_LDAPI=<%= slapd_ldapi %>
+SLAPD_LDAPS=<%= slapd_ldaps %>
+<%- else -%>
+<%= slapd_var %>="<%= slapd_url %>"
+<%- end -%>

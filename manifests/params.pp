@@ -38,11 +38,12 @@ class ldap::params {
   }
 
   # Set other variables by OS family.
-  $cacertdir = $::osfamily ? { # migrate to /etc/pki/tls/certs ?
-    'RedHat' => $::operatingsystemrelease ? {
-      /^[125]\./ => '/etc/openldap/cacerts', # /^[15]\./ ?
-      default    => '/etc/openldap/certs',
-    },
+  $cacertdir = $::osfamily ? {
+    'RedHat' => '/etc/pki/tls/certs',
+    default  => '/etc/ssl/certs',
+  }
+  $ssl_prefix = $::osfamily ? {
+    'RedHat' => '/etc/openldap',
     default  => '/etc/ssl/certs',
   }
   $config = $::osfamily ? {
