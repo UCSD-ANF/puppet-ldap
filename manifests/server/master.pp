@@ -63,7 +63,7 @@
 #
 #    *Optional* (defaults to false)
 #
-#  [ssl_ca]
+#  [ssl_cacert]
 #
 #    *Optional* (defaults to false)
 #
@@ -143,7 +143,7 @@ class ldap::server::master(
   $ldap                = true,
   $ldapi               = true,
   $ssl                 = false,
-  $ssl_ca              = false,
+  $ssl_cacert          = false,
   $ssl_cert            = false,
   $ssl_key             = false,
   $syncprov            = false,
@@ -168,7 +168,7 @@ class ldap::server::master(
     rootpw              => $rootpw,
     schema_inc          => $schema_inc,
     ssl                 => $ssl,
-    ssl_ca              => $ssl_ca,
+    ssl_cacert          => $ssl_cacert,
     ssl_cert            => $ssl_cert,
     ssl_key             => $ssl_key,
     suffix              => $suffix,

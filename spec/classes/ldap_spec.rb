@@ -18,7 +18,7 @@ describe 'ldap' do
 			:cfg           => '/etc/ldap/ldap.conf',
 			:cacertdir     => '/etc/ssl/certs',
 			:ssl_prefix    => '/etc/ssl/certs',
-			:ssl_cert      => 'ldapserver00.pem',
+			:ssl_cacert    => 'ldapserver00.pem',
     },
     'CentOS' => {
       :operatingsystem        => 'CentOS',
@@ -32,9 +32,9 @@ describe 'ldap' do
 			:package       => 'openldap-clients',
 			:prefix        => '/etc/openldap',
 			:cfg           => '/etc/openldap/ldap.conf',
-			:cacertdir     => '/etc/openldap',
-			:ssl_prefix    => '/etc/pki/tls/misc',
-			:ssl_cert      => 'ldapserver00.pem',
+			:ssl_prefix    => '/etc/openldap',
+			:cacertdir     => '/etc/pki/tls/certs',
+			:ssl_cacert    => 'ldapserver00.pem',
     },
     'RedHat' => {
       :operatingsystem        => 'RedHat',
@@ -48,9 +48,9 @@ describe 'ldap' do
 			:package       => 'openldap-clients',
 			:prefix        => '/etc/openldap',
 			:cfg           => '/etc/openldap/ldap.conf',
-			:cacertdir     => '/etc/openldap',
-			:ssl_prefix    => '/etc/pki/tls/misc',
-			:ssl_cert      => 'ldapserver00.pem',
+			:ssl_prefix    => '/etc/openldap',
+			:cacertdir     => '/etc/pki/tls/certs',
+			:ssl_cacert    => 'ldapserver00.pem',
     }
   }
 
@@ -86,14 +86,14 @@ describe 'ldap' do
 
 			context 'SSL Enabled with certificate filename' do
 				let(:params) { {
-					:uri      => 'ldap://ldap.example.com',
-					:base     => 'dc=suffix',
-					:ssl      => true,
-					:ssl_cert => oses[os][:ssl_cert],
+					:uri        => 'ldap://ldap.example.com',
+					:base       => 'dc=suffix',
+					:ssl        => true,
+					:ssl_cacert => oses[os][:ssl_cacert],
 				} }
 				it { should contain_file(
           'ssl_client_cert').with_path(
-          "#{oses[os][:cacertdir]}/#{oses[os][:ssl_cert]}") } 
+          "#{oses[os][:cacertdir]}/#{oses[os][:ssl_cacert]}") } 
 			end
 
 			context 'SSL Enabled without certificate' do

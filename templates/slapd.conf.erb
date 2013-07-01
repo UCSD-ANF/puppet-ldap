@@ -37,9 +37,9 @@ moduleload	<%= mod %>
 #moduleload	syncprov
 
 <% if @ssl and ssl == true then -%>
-TLSCACertificateFile   <%= ssl_ca_dst   %>
-TLSCertificateFile     <%= ssl_cert_dst %>
-TLSCertificateKeyFile  <%= ssl_key_dst  %>
+TLSCACertificateFile   <%= ssl_cacert_paths['dst']   %>
+TLSCertificateFile     <%= ssl_cert_paths['dst'] %>
+TLSCertificateKeyFile  <%= ssl_key_paths['dst']  %>
 #TLSVerifyClient        allow
 <% end -%>
 

@@ -38,11 +38,11 @@ class ldap::params {
   }
 
   # Set other variables by OS family.
-  $cacertdir = $::osfamily ? {
+  $cacertdir = $::osfamily ? {  # where to install our CA cert.
     'RedHat' => '/etc/pki/tls/certs',
     default  => '/etc/ssl/certs',
   }
-  $ssl_prefix = $::osfamily ? {
+  $ssl_prefix = $::osfamily ? {  # where to install our CA-signed cert/key.
     'RedHat' => '/etc/openldap',
     default  => '/etc/ssl/certs',
   }

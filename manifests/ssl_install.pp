@@ -1,56 +1,43 @@
 # Installer for SSL certs/keys if $ssl == true.
+# Clients and servers use this type, so notify should be handled for the
+# different services in the calling class.
 define ldap::ssl_install(
   $ensure  = 'present',
-  $cacert  = false, # true for server CA certificates
+  $cacert  = true, # true for installing client CA certificates
+  $path,
 ) {
 
   include ldap::params
 
-  # Normalize a couple parameters into this class's namespace.
-  $ssl_dir = $cacert ? {
-    true  => $ldap::params::cacertdir,
-    false => $ldap::params::ssl_prefix,
+  # Protect key files.  The rest should be 644.
+  $mode = $name ? {
+    /\.key$/ => '0600',
+    default  => '0644',
   }
-  $mode = $cacert ? {
-    true  => $name ? {
-      /\.key$/ => '0600',
-      default  => '0644',
+  # Set up a predictable alias for later 'require => File...'  clauses.
+  $alias = $cacert ? {
+    true  => 'ssl_client_cert',
+    false => $name ? {
+      /\.key$/ => 'ssl_server_key',
+      default  => 'ssl_server_cert',
     },
-    false => '0640',
-  }
-  $filename = $cacert ? {
-    true  => $name ? {
-      /\.key$/ => 'ssl_cakey',
-      default  => 'ssl_cacert',
-    },
-    false => 'ssl_client_cert',
   }
 
-  # Allow users to define their own puppet resource or simple filename.
-  if ( $name =~ /^puppet\:/ ) {
-    $cert_src = $name
-    $cert_dst = inline_template(
-      '<%= ssl_dir %>/<%= File.basename(name) %>')
-  } else {
-    $cert_src = "puppet:///files/ldap/${name}"
-    $cert_dst = "${ssl_dir}/${name}"
-  }
-
-  file { $filename :
+  file { $alias :
     ensure => $ensure,
     source => $cert_src,
     mode   => $mode,
-    path   => $cert_dst,
+    path   => $path,
     owner  => $ldap::params::owner,
     group  => $ldap::params::group,
   }
 
-  if $cacert == false {
+  if $cacert == true {
     # Symlink client's root certificate to a path based on the cert hash.
-    $cmd    = "openssl x509 -noout -hash -in ${cert_dst}"
-    $target = "${ldap::params::ssl_dir}/`${cmd}`.0"
+    $cmd    = "openssl x509 -noout -hash -in ${path}"
+    $target = "${ldap::params::cacertdir}/`${cmd}`.0"
     exec { 'Server certificate hash':
-      command   => "ln -s ${cert_dst} ${target}",
+      command   => "ln -s ${path} ${target}",
       unless    => "test -f ${target}",
       subscribe => File[$name],
     }

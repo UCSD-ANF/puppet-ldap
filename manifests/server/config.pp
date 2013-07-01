@@ -21,7 +21,7 @@ class ldap::server::config(
   $ldap,
   $ldapi,
   $ssl,
-  $ssl_ca,
+  $ssl_cacert,
   $ssl_cert,
   $ssl_key,
   $sync_binddn,
@@ -79,27 +79,35 @@ class ldap::server::config(
   if $ssl {
     $msg_prefix = $ldap::params::ssl_msg_prefix
     $msg_suffix = $ldap::params::ssl_msg_suffix
-    if !$ssl_ca   { fail("${msg_prefix} ssl_ca   ${msg_suffix}") }
-    if !$ssl_cert { fail("${msg_prefix} ssl_cert ${msg_suffix}") }
-    if !$ssl_key  { fail("${msg_prefix} ssl_key  ${msg_suffix}") }
-    ldap::ssl_install { $ssl_ca :
+    if !$ssl_cacert { fail("${msg_prefix} ssl_cacert ${msg_suffix}") }
+    if !$ssl_cert   { fail("${msg_prefix} ssl_cert   ${msg_suffix}") }
+    if !$ssl_key    { fail("${msg_prefix} ssl_key    ${msg_suffix}") }
+
+    # Render source and destination paths.
+    $ssl_cacert_paths = ldap_ssl_path($ssl_cacert,$ldap::params::cacertdir)
+    $ssl_cert_paths   = ldap_ssl_path($ssl_cert,$ldap::params::ssl_prefix)
+    $ssl_key_paths    = ldap_ssl_path($ssl_key,$ldap::params::ssl_prefix)
+
+    ldap::ssl_install { $ssl_cert_paths['src'] :
       ensure => $ensure,
-      cacert => true,
+      cacert => false, # installing our CA-signed cert.
       notify => Service[$ldap::params::service],
+      path   => $ssl_cert_paths['dst'],
     }
-    ldap::ssl_install { $ssl_key :
+    ldap::ssl_install { $ssl_key_paths['src'] :
       ensure => $ensure,
-      cacert => true,
+      cacert => false, # installing our CA-signed key.
       notify => Service[$ldap::params::service],
+      path   => $ssl_key_paths['dst'],
     }
 
-    # Install $ssl_cert virtually in case we're a client and server.
-    @ldap::ssl_install { $ssl_cert :
+    # Install ssl_cacert virtually in case we're a client and server.
+    @ldap::ssl_install { $ssl_cacert_paths['src'] :
       ensure => $ensure,
-      cacert => false,
       notify => Service[$ldap::params::service],
+      path   => $ssl_cacert_paths['dst'],
     }
-    realize(Ldap::Ssl_install[$ssl_cert])
+    realize(Ldap::Ssl_install[$ssl_cacert_paths['src']])
   }
 
   # Configure server.
@@ -136,6 +144,9 @@ class ldap::server::config(
       content => template('ldap/slapd_defaults.erb'),
       notify  => Service[$ldap::params::service],
       require => Package[$ldap::params::server_package],
+      mode    => '0644',
+      owner   => 'root',
+      group   => 'root',
     }
   }
 }
