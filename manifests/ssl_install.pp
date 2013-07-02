@@ -18,8 +18,8 @@ define ldap::ssl_install(
   $alias = $cacert ? {
     true  => 'ssl_client_cert',
     false => $name ? {
-      /\.key$/ => 'ssl_server_key',
-      default  => 'ssl_server_cert',
+      /-key\.(pem|crt)$/ => 'ssl_server_key',
+      default            => 'ssl_server_cert',
     },
   }
 
