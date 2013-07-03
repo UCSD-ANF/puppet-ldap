@@ -37,8 +37,8 @@ moduleload	<%= mod %>
 #moduleload	syncprov
 
 <% if @ssl and ssl == true then -%>
-<%  if @ssl_ldap_slapd_ca then -%>
-TLSCACertificateFile    <%= ssl_ldap_slapd_ca %>
+<%  if @ssl_ca and ssl_ca == true then -%>
+TLSCACertificateFile    <%= cacertdir %>/ldap-slapd-ca.pem
 <%  else -%>
 TLSCACertificatePath    <%= cacertdir %>
 <%  end -%>
