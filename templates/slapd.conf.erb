@@ -36,16 +36,17 @@ moduleload	<%= mod %>
 <% end -%>
 #moduleload	syncprov
 
-<% if @ssl and ssl == true then -%>
-<%  if @ssl_ca and ssl_ca.class == 'String' then -%>
-TLSCACertificateFile    <%= cacertdir %>/ldap-slapd-ca.pem
+<% if @ssl and ssl == true then prepend=''
+else prepend='#'
+end -%>
+<%  if @ssl_ca and ssl_ca != false then -%>
+<%= prepend %>TLSCACertificateFile    <%= cacertdir %>/ldap-slapd-ca.pem
 <%  else -%>
-TLSCACertificatePath    <%= cacertdir %>
+<%= prepend %>TLSCACertificatePath    <%= cacertdir %>
 <%  end -%>
-TLSCertificateFile      <%= ssl_slapd_cert %>
-TLSCertificateKeyFile   <%= ssl_slapd_key  %>
+<%= prepend %>TLSCertificateFile      <%= ssl_slapd_cert %>
+<%= prepend %>TLSCertificateKeyFile   <%= ssl_slapd_key  %>
 #TLSVerifyClient        allow
-<% end -%>
 
 #######################################################################
 

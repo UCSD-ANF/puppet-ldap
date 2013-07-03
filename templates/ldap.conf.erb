@@ -38,17 +38,14 @@ pam_password         <%= pam_passwd %>
 pam_filter           <%= pam_filter %>
 <% end -%>
 
-<% if ssl == true then -%>
-#ssl           start_tls
-tls_reqcert   demand
-<%  if @ssl_ldap_slapd_ca then -%>
-TLS_CACERT      <%= ssl_ldap_slapd_ca %>
+<% if ssl == true then prepend = ''
+else prepend = '#'
+end -%>
+<%= prepend %>ssl           start_tls
+<%= prepend %>tls_reqcert   demand
+<%  if @ssl_ca and ssl_ca != false then -%>
+<%= prepend %>TLS_CACERT      <%= cacertdir %>/ldap-slapd-ca.pem
 <%  else -%>
-TLS_CACERTDIR   <%= cacertdir %>
+<%= prepend %>TLS_CACERTDIR   <%= cacertdir %>
 <%  end -%>
-<% else -%>
-#ssl           start_tls
-#tls_reqcert   never
-#tls_cacertdir <%= scope.lookupvar('ldap::params::cacertdir') %>
-<% end -%>
 
