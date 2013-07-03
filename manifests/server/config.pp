@@ -101,7 +101,8 @@ class ldap::server::config(
       require => File['server_config'],
     }
 
-    # ssl_ca is optional; we may have had a real CA sign our cert.
+    # ssl_ca is optional; we may have had a real CA sign our cert,
+    # or installed our own CA cert already in cacertdir.
     if $ssl_ca {
       # Install CA cert virtually, in case we're a client and server.
       @ldap::ssl_ca { $ssl_ca :

@@ -19,7 +19,7 @@ bindpw <%= bindpw %>
 <% end -%>
 
 <% if nsswitch == true then -%>
-# DNs in groups
+# DNS in groups
 #nss_schema         rfc2307bis
 #nss_map_attribute  uniquemember member
 #nss_map_attribute memberuid    member
@@ -38,9 +38,7 @@ pam_password         <%= pam_passwd %>
 pam_filter           <%= pam_filter %>
 <% end -%>
 
-<% if ssl == true then prepend = ''
-else prepend = '#'
-end -%>
+<% if ssl == true then -%>
 <%= prepend %>ssl           start_tls
 <%= prepend %>tls_reqcert   demand
 <%  if @ssl_ca and ssl_ca.class == String then -%>
@@ -52,4 +50,5 @@ end -%>
 # recognized by a well-known Certificate Authority.
 <%= prepend %>TLS_CACERTDIR   <%= cacertdir %>
 <%  end -%>
+<% end -%>
 

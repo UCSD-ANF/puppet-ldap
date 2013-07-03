@@ -192,9 +192,10 @@ class ldap(
     # Normalize variable for template.
     $cacertdir = $ldap::params::cacertdir
 
-    # ssl_ca is optional; we may have had a real CA sign our cert.
+    # ssl_ca is optional; we may have had a real CA sign our cert,
+    # or installed our own CA cert already in cacertdir.
     if $ssl_ca {
-      # Install $ssl_ca virtually, in case we're a client and server.
+      # Install ssl_ca virtually, in case we're a client and server.
       @ldap::ssl_ca {  $ssl_ca :
         ensure  => $ensure,
         require => File['client_config'],

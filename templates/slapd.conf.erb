@@ -36,9 +36,7 @@ moduleload	<%= mod %>
 <% end -%>
 #moduleload	syncprov
 
-<% if @ssl and ssl == true then prepend=''
-else prepend='#'
-end -%>
+<% if @ssl and ssl == true then -%>
 <%  if @ssl_ca and ssl_ca.class == String then -%>
 # Use our LDAP-specific, closed community (aka self-signed) CA cert.
 <%= prepend %>TLSCACertificateFile    <%= cacertdir %>/ldap-slapd-ca.pem
@@ -51,6 +49,7 @@ end -%>
 <%= prepend %>TLSCertificateFile      <%= ssl_slapd_cert %>
 <%= prepend %>TLSCertificateKeyFile   <%= ssl_slapd_key  %>
 #TLSVerifyClient        allow
+<% end -%>
 
 #######################################################################
 
