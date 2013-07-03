@@ -39,13 +39,13 @@
 #
 #  [ssl]
 #    Enable TLS/SSL negotiation with the server
-#    *Requires*: ssl_cacert parameter
 #    *Optional* (defaults to false)
 #
-#  [ssl_cacert]
-#    Filename for the CA (or self signed certificate). It should
-#    be located under puppet:///files/ldap/
-#    *Optional* (defaults to false)
+#  [ssl_ca]
+#   Puppet resource to get your self-signed CA cert from, in .pem format.
+#   If not provided, its assumed you've got a CA-signed cert signed by a
+#   CA found in your OS's standard certficate bundle.
+#   *Optional* (defaults to false)
 #
 #  [nsswitch]
 #    If enabled (nsswitch => true) enables nsswitch to use
@@ -115,14 +115,14 @@
 #   uri  => 'ldap://ldapserver00',
 #   base => 'dc=suffix',
 #   ssl  => true,
-#   ssl_cacert => 'ldapserver00.pem'
+#   ssl_ca => 'ldapserver00.pem'
 # }
 #
 # class { 'ldap':
 #   uri        => 'ldap://ldapserver00',
 #   base       => 'dc=suffix',
 #   ssl        => true,
-#   ssl_cacert => 'ldapserver00.pem'
+#   ssl_ca => 'ldapserver00.pem'
 #
 #   nsswitch   => true,
 #   nss_passwd => 'ou=users',
@@ -146,19 +146,19 @@
 class ldap(
   $uri,
   $base,
-  $version        = '3',
+  $version        = 3,
   $timelimit      = 30,
   $bind_timelimit = 30,
   $idle_timelimit = 60,
   $binddn         = false,
   $bindpw         = false,
   $ssl            = false,
-  $ssl_cacert     = false,
+  $ssl_ca         = false,
 
-  $nsswitch   = false,
-  $nss_passwd = false,
-  $nss_group  = false,
-  $nss_shadow = false,
+  $nsswitch       = false,
+  $nss_passwd     = false,
+  $nss_group      = false,
+  $nss_shadow     = false,
 
   $pam            = false,
   $pam_att_login  = 'uid',
@@ -167,7 +167,8 @@ class ldap(
   $pam_filter     = 'objectClass=posixAccount',
 
   $enable_motd    = false,
-  $ensure         = present) {
+  $ensure         = present,
+) {
 
   include ldap::params
 
@@ -179,28 +180,29 @@ class ldap(
     ensure => $ensure,
   }
 
-  # Conditionally set up SSL before we call any templates.
-  if $ssl {
-    if !$ssl_cacert {
-      fail("must specify ssl_cacert (got '${ssl_cacert}')")
-    }
-    $ssl_cacert_paths = 
-      ldap_ssl_path($ssl_cacert,$ldap::params::cacertdir)
-
-    # Install $ssl_cacert virtually in case we're a client and server.
-    @ldap::ssl_install { $ssl_cacert_paths['src'] :
-      ensure  => $ensure,
-      require => $ldap::params::package,
-      path    => $ssl_cacert_paths['dst'],
-    }
-    realize( Ldap::Ssl_install[$ssl_cacert_paths['src']] )
-  }
-
   File {
     ensure  => $ensure,
     mode    => '0644',
     owner   => $ldap::params::owner,
     group   => $ldap::params::group,
+  }
+
+  # Conditionally set up SSL before we call any templates.
+  if $ssl {
+    # Normalize variable for template.
+    $cacertdir = $ldap::params::cacertdir
+
+    # ssl_ca is optional; we may have had a real CA sign our cert.
+    if $ssl_ca {
+      # Install $ssl_ca virtually, in case we're a client and server.
+      @ldap::ssl_ca {  $ssl_ca :
+        ensure  => $ensure,
+        require => File['client_config'],
+      }
+      realize( Ldap::Ssl_ca[$ssl_ca] )
+    } else {
+      warning('Not installing ssl_ca. Assuming your CA cert is in place.')
+    }
   }
 
   $dirEnsure = $ensure ? {

@@ -97,7 +97,7 @@
 #    *Requires*: ssl => true
 #    *Optional* (defaults to false)
 #
-#  [ssl_cacert]
+#  [ssl_ca]
 #    CA certificate filename (should be located at puppet:///files/ldap)
 #    *Requires*: ssl => true
 #    *Optional* (defaults to false)
@@ -192,7 +192,7 @@ class ldap::server::slave(
   $ldap           = true,
   $ldapi          = true,
   $ssl            = false,
-  $ssl_cacert     = false,
+  $ssl_ca         = false,
   $ssl_cert       = false,
   $ssl_key        = false,
   $sync_type      = 'refreshOnly',
@@ -219,7 +219,7 @@ class ldap::server::slave(
     rootpw        => $rootpw,
     schema_inc    => $schema_inc,
     ssl           => $ssl,
-    ssl_cacert    => $ssl_cacert,
+    ssl_ca        => $ssl_ca,
     ssl_cert      => $ssl_cert,
     ssl_key       => $ssl_key,
     suffix        => $suffix,

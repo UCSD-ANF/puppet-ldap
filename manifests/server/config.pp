@@ -21,7 +21,7 @@ class ldap::server::config(
   $ldap,
   $ldapi,
   $ssl,
-  $ssl_cacert,
+  $ssl_ca,
   $ssl_cert,
   $ssl_key,
   $sync_binddn,
@@ -77,37 +77,41 @@ class ldap::server::config(
 
   # Conditionally set up SSL before we call any templates.
   if $ssl {
+    #Normalize variables for templates.
+    $cacertdir  = $ldap::params::cacertdir
+    $ssl_prefix = $ldap::params::ssl_prefix
     $msg_prefix = $ldap::params::ssl_msg_prefix
     $msg_suffix = $ldap::params::ssl_msg_suffix
-    if !$ssl_cacert { fail("${msg_prefix} ssl_cacert ${msg_suffix}") }
-    if !$ssl_cert   { fail("${msg_prefix} ssl_cert   ${msg_suffix}") }
-    if !$ssl_key    { fail("${msg_prefix} ssl_key    ${msg_suffix}") }
 
-    # Render source and destination paths.
-    $ssl_cacert_paths = ldap_ssl_path($ssl_cacert,$ldap::params::cacertdir)
-    $ssl_cert_paths   = ldap_ssl_path($ssl_cert,$ldap::params::ssl_prefix)
-    $ssl_key_paths    = ldap_ssl_path($ssl_key,$ldap::params::ssl_prefix)
+    if !$ssl_cert { fail("${msg_prefix} ssl_cert ${msg_suffix}") }
+    if !$ssl_key  { fail("${msg_prefix} ssl_key  ${msg_suffix}") }
 
-    ldap::ssl_install { $ssl_cert_paths['src'] :
+    $ssl_slapd_cert = "${ssl_prefix}/slapd-cert.pem"
+    $ssl_slapd_key  = "${ssl_prefix}/slapd-key.pem"
+
+    file { $ssl_slapd_cert :
       ensure => $ensure,
-      cacert => false, # installing our CA-signed cert.
-      notify => Service[$ldap::params::service],
-      path   => $ssl_cert_paths['dst'],
-    }
-    ldap::ssl_install { $ssl_key_paths['src'] :
-      ensure => $ensure,
-      cacert => false, # installing our CA-signed key.
-      notify => Service[$ldap::params::service],
-      path   => $ssl_key_paths['dst'],
+      mode   => '0644',
+      source => $ssl_cert,
+    }->
+    file { $ssl_slapd_key :
+      ensure  => $ensure,
+      mode    => '0600',
+      source  => $ssl_key,
+      require => File['server_config'],
     }
 
-    # Install ssl_cacert virtually in case we're a client and server.
-    @ldap::ssl_install { $ssl_cacert_paths['src'] :
-      ensure => $ensure,
-      notify => Service[$ldap::params::service],
-      path   => $ssl_cacert_paths['dst'],
+    # ssl_ca is optional; we may have had a real CA sign our cert.
+    if $ssl_ca {
+      # Install CA cert virtually, in case we're a client and server.
+      @ldap::ssl_ca { $ssl_ca :
+        ensure  => $ensure,
+        require => File['server_config'],
+      }
+      realize( Ldap::Ssl_ca[$ssl_ca] )
+    } else {
+      warning('Not installing ssl_ca. Assuming your CA cert is in place.')
     }
-    realize(Ldap::Ssl_install[$ssl_cacert_paths['src']])
   }
 
   # Configure server.
@@ -119,24 +123,25 @@ class ldap::server::config(
     require => Package[$ldap::params::server_package],
   }
 
-  # Create default log dir.
-  file { '/var/log/slapd':
-    ensure  => $dirEnsure,
-    notify  => Service[$ldap::params::service],
-    require => Package[$ldap::params::server_package],
-  }
+  ## Create default log dir?
+  #file { '/var/log/slapd':
+  #  ensure  => $dirEnsure,
+  #  notify  => Service[$ldap::params::service],
+  #  require => Package[$ldap::params::server_package],
+  #}
 
   # Manage OS-specific defaults, if we can.
   if $ldap::params::slapd_defaults {
+    # Normalize values to this class for template() calls.
     $slapd_var       = $ldap::params::slapd_var
     $slapd_defaults  = $ldap::params::slapd_defaults
     $slapd_ldap      = $ldap  ? { true  => 'yes', false => 'no', }
     $slapd_ldapi     = $ldapi ? { true  => 'yes', false => 'no', }
     $slapd_ldaps     = $ssl   ? { true  => 'yes', false => 'no', }
-    $slapd_url_ldap  = $ldap  ? { true  => 'ldap:///', false => '', }
+    $slapd_url_ldap  = $ldap  ? { true  => 'ldap:///',  false => '', }
     $slapd_url_ldapi = $ldapi ? { true  => 'ldapi:///', false => '', }
     $slapd_url_ldaps = $ssl   ? { true  => 'ldaps:///', false => '', }
-    $slapd_url = join(
+    $slapd_url       = join(
       [$slapd_url_ldap,$slapd_url_ldapi,$slapd_url_ldaps,], ' ')
 
     file { $slapd_defaults :
