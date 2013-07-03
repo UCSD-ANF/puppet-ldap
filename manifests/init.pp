@@ -177,7 +177,8 @@ class ldap(
   }
 
   package { $ldap::params::package:
-    ensure => $ensure,
+    ensure   => $ensure,
+    provider => $ldap::params::package_provider,
   }
 
   File {

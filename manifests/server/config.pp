@@ -56,7 +56,8 @@ class ldap::server::config(
   }
 
   package { $ldap::params::server_package :
-    ensure => $ensure,
+    ensure   => $ensure,
+    provider => $ldap::params::package_provider,
   }
 
   service { $ldap::params::service :
@@ -74,6 +75,10 @@ class ldap::server::config(
     owner   => $ldap::params::server_owner,
     group   => $ldap::params::server_group,
   }
+  $dirEnsure = $ensure ? {
+    present => directory,
+    default => absent,
+  }
 
   # Conditionally set up SSL before we call any templates.
   if $ssl {
@@ -89,6 +94,10 @@ class ldap::server::config(
     $ssl_slapd_cert = "${ssl_prefix}/slapd-cert.pem"
     $ssl_slapd_key  = "${ssl_prefix}/slapd-key.pem"
 
+    file { $ssl_prefix :
+      ensure => $dirEnsure,
+      mode   => '0755',
+    }->
     file { $ssl_slapd_cert :
       ensure => $ensure,
       mode   => '0644',

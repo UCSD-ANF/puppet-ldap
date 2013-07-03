@@ -43,11 +43,6 @@ class ldap::params {
     'RedHat' => '/etc/pki/tls/certs',
     default  => '/etc/ssl/certs',
   }
-  # where to install our server's CA-signed cert/key.
-  $ssl_prefix = $::osfamily ? {
-    'RedHat' => '/etc/openldap',
-    default  => '/etc/ssl/certs',
-  }
   $config = $::osfamily ? {
     default  => 'ldap.conf',
   }
@@ -163,6 +158,10 @@ class ldap::params {
     'Debian' => '/etc/default/slapd',
     'RedHat' => '/etc/sysconfig/ldap',
     default  => undef,
+  }
+  # where to install our server's CA-signed cert/key.
+  $ssl_prefix = $::osfamily ? {
+    default => "${prefix}/certs",
   }
 
   # SSL error messages used in a couple places.

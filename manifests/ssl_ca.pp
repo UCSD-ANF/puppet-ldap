@@ -1,15 +1,17 @@
-# Install a Certificate Authority root certificate.
+# Install an LDAP-specific Certificate Authority root certificate.
 define ldap::ssl_ca(
   $ensure = 'present',
 ) {
 
   include ldap::params
 
-  # Install CA cert
-  $ssl_ldap_slapd_ca = "${ldap::params::cacertdir}/ldap-slapd-ca.pem"
+  $ldap_slapd_ca = "${ldap::params::cacertdir}/ldap-slapd-ca.pem"
   file { 'ldap_slapd_ca' :
     ensure  => $ensure,
-    path    => $ssl_ldap_slapd_ca,
+    path    => $ldap_slapd_ca,
+    mode    => '0644',
+    owner   => $ldap::params::owner,
+    group   => $ldap::params::group,
     source  => $name,
   }
 
