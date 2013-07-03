@@ -6,20 +6,34 @@ class ldap::params {
     fail("${module_name} unsupported for ${::kernel}.")
   }
 
-  if  $::architecture != 'amd64'
-  and $::architecture != 'x86_64'
-  and $::architecture !~ /^i?[346]86/ {
-    fail("Architecture unsupported (${::architecture})")
+  # Normalize $osfamily.
+  if $::osfamily {
+    $osfamily = $::osfamily
+  } else {
+    # Set up $osfamily for Facter < 1.6.1
+    case $::operatingsystem {
+      'RedHat','Fedora','CentOS','Scientific','SLC','Ascendos','CloudLinux','PSBM','OracleLinux','OVS','OEL': {
+        $osfamily = 'RedHat'
+      } 'ubuntu', 'debian': {
+        $osfamily = 'Debian'
+      } 'SLES', 'SLED', 'OpenSuSE', 'SuSE': {
+        $osfamily = 'Suse'
+      } 'Solaris', 'Nexenta': {
+        $osfamily = 'Solaris'
+      } default: {
+        $osfamily = $::operatingsystem
+      }
+    }
   }
 
-  case $::osfamily {
+  case $osfamily {
     /(Debian|Suse)/: {
       # NOOP
     } 'RedHat': {
       # OVS release versions are offset from other variants by 4.
       # We'll reject other RedHat versions lower than 5, here, so
       # that we can match [125] and/or [15] for some
-      # $::osfamily-related checks later.
+      # $osfamily-related checks later.
       if  $::operatingsystem == 'OVS'
       and $::operatingsystemrelease !~ /^[12]\./ {
           fail("OS version unsupported (${::operatingsystemrelease})")
@@ -39,24 +53,24 @@ class ldap::params {
 
   # Set other variables by OS family.
   # where to install our CA cert, or load OS-provided CA certs.
-  $cacertdir = $::osfamily ? {
+  $cacertdir = $osfamily ? {
     'RedHat' => '/etc/pki/tls/certs',
     default  => '/etc/ssl/certs',
   }
-  $config = $::osfamily ? {
+  $config = $osfamily ? {
     default  => 'ldap.conf',
   }
-  $db_prefix = $::osfamily ? {
+  $db_prefix = $osfamily ? {
     default  => '/var/lib/ldap',
   }
-  $group = $::osfamily ? {
+  $group = $osfamily ? {
     'RedHat' => $::operatingsystemrelease ? {
       /^[125]\./ => 'root', # /^[15]\./ ?
       default    => 'ldap',
     },
     default  => 'root',
   }
-  $index_base = $::osfamily ? {
+  $index_base = $osfamily ? {
     default => [
       'index objectclass  eq',
       'index entryCSN     eq',
@@ -69,14 +83,14 @@ class ldap::params {
       'index displayName  pres,sub,eq',
     ]
   }
-  $modules_base = $::osfamily ? {
+  $modules_base = $osfamily ? {
     'RedHat' => $::operatingsystem ? {
       'OVS'   => [ 'back_bdb', ],
       default => [  ],
     },
     default  => [ 'back_bdb', ],
   }
-  $module_prefix = $::osfamily ? {
+  $module_prefix = $osfamily ? {
     'Debian' => $::architecture ? {
       'amd64'      => '/usr/lib64/ldap',
       /^i?[346]86/ => '/usr/lib32/ldap',
@@ -87,29 +101,29 @@ class ldap::params {
     },
     default => '/usr/lib/openldap',
   }
-  $owner = $::osfamily ? {
+  $owner = $osfamily ? {
     'RedHat' => $::operatingsystemrelease ? {
       /^[125]\./ => 'root', # /^[15]\./ ?
       default    => 'nslcd',
     },
     default  => 'root',
   }
-  $package = $::osfamily ? {
+  $package = $osfamily ? {
     'Debian' => [ 'ldap-utils', ],
     'Suse'   => [ 'openldap2-client', ],
     default  => [ 'openldap', 'openldap-clients', ],
   }
-  $prefix = $::osfamily ? {
+  $prefix = $osfamily ? {
     'Debian' => '/etc/ldap',
     default  => '/etc/openldap',
   }
-  $schema_prefix = $::osfamily ? {
+  $schema_prefix = $osfamily ? {
     default  => "${prefix}/schema",
   }
-  $server_config = $::osfamily ? {
+  $server_config = $osfamily ? {
     default  => 'slapd.conf',
   }
-  $server_group = $::osfamily ? {
+  $server_group = $osfamily ? {
     'Debian' => 'openldap',
     'RedHat' => $::operatingsystemrelease ? {
       /^5\./  => 'root', # /^[15]\./ ?
@@ -117,7 +131,7 @@ class ldap::params {
     },
     default  => 'root',
   }
-  $server_owner = $::osfamily ? {
+  $server_owner = $osfamily ? {
     'Debian' => 'openldap',
     'RedHat' => $::operatingsystemrelease ? {
       /^5\./  => 'root', # /^[15]\./ ?
@@ -125,23 +139,23 @@ class ldap::params {
     },
     default  => 'root',
   }
-  $server_package = $::osfamily ? {
+  $server_package = $osfamily ? {
     'Debian' => [ 'slapd', ],
     'Suse'   => [ 'openldap2', ],
     default  => [ 'openldap-servers', ],
   }
-  $server_pattern = $::osfamily ? {
+  $server_pattern = $osfamily ? {
     default  => 'slapd',
   }
-  $server_run = $::osfamily ? {
+  $server_run = $osfamily ? {
     'Suse'   => '/var/run/slapd',
     default  => '/var/run/openldap',
   }
-  $server_script = $::osfamily ? {
+  $server_script = $osfamily ? {
     'Suse'   => 'ldap',
     default  => undef,
   }
-  $service = $::osfamily ? {
+  $service = $osfamily ? {
     'RedHat' => $::operatingsystemrelease ? {
       /^5\./  => 'ldap',
       default => 'slapd',
@@ -149,18 +163,18 @@ class ldap::params {
     'Suse'   => 'ldap',
     default  => 'slapd',
   }
-  $slapd_var = $::osfamily ? {
+  $slapd_var = $osfamily ? {
     'Debian' => 'SLAPD_SERVICES',
     'RedHat' => 'SLAPD_URLS',
     default  => undef,
   }
-  $slapd_defaults = $::osfamily ? {
+  $slapd_defaults = $osfamily ? {
     'Debian' => '/etc/default/slapd',
     'RedHat' => '/etc/sysconfig/ldap',
     default  => undef,
   }
   # where to install our server's CA-signed cert/key.
-  $ssl_prefix = $::osfamily ? {
+  $ssl_prefix = $osfamily ? {
     default => "${prefix}/certs",
   }
 
