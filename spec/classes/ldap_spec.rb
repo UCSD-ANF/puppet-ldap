@@ -22,7 +22,7 @@ describe 'ldap' do
     },
     'CentOS' => {
       :operatingsystem        => 'CentOS',
-      :osfamily               => 'RedHat',
+      :osfamily               => '', # simulate Facter <1.6.1
       :operatingsystemrelease => '5.0',
       :lsbdistid              => 'CentOS',
       :lsbdistrelease         => '5.0',
@@ -92,7 +92,6 @@ describe 'ldap' do
 					:ssl_ca => oses[os][:ssl_ca],
 				} }
 				it { should contain_file(
-          'ldap_slapd_ca').with_path(
           "#{oses[os][:cacertdir]}/ldap-slapd-ca.pem") } 
 			end
 

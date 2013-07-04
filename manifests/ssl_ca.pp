@@ -6,9 +6,8 @@ define ldap::ssl_ca(
   include ldap::params
 
   $ldap_slapd_ca = "${ldap::params::cacertdir}/ldap-slapd-ca.pem"
-  file { 'ldap_slapd_ca' :
+  file { $ldap_slapd_ca :
     ensure  => $ensure,
-    path    => $ldap_slapd_ca,
     mode    => '0644',
     owner   => $ldap::params::owner,
     group   => $ldap::params::group,
@@ -17,12 +16,12 @@ define ldap::ssl_ca(
 
   # Symlink CA certificate to a path based on the cert hash, Debian-style.
   if $::osfamily == 'Debian' {
-    $cmd    = "openssl x509 -noout -hash -in ${ssl_ldap_slapd_ca}"
+    $cmd    = "openssl x509 -noout -hash -in ${ldap_slapd_ca}"
     $target = "${ldap::params::cacertdir}/`${cmd}`.0"
     exec { 'CA certificate hash':
-      command => "ln -s ${ssl_ldap_slapd_ca} ${target}",
+      command => "ln -s ${ldap_slapd_ca} ${target}",
       unless  => "test -f ${target}",
-      require => File['ldap_slapd_ca'],
+      require => File[$ldap_slapd_ca],
     }
   }
 }

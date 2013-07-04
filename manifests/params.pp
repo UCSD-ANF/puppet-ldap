@@ -12,7 +12,8 @@ class ldap::params {
   } else {
     # Set up $osfamily for Facter < 1.6.1
     case $::operatingsystem {
-      'RedHat','Fedora','CentOS','Scientific','SLC','Ascendos','CloudLinux','PSBM','OracleLinux','OVS','OEL': {
+      'RedHat','Fedora','CentOS','Scientific','SLC','Ascendos','CloudLinux',
+      'PSBM','OracleLinux','OVS','OEL': {
         $osfamily = 'RedHat'
       } 'ubuntu', 'debian': {
         $osfamily = 'Debian'
