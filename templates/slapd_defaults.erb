@@ -1,8 +1,8 @@
 # Options of slapd (see man slapd)
-<%- if scope.lookupvar('::osfamily') == 'RedHat': -%>
-SLAPD_LDAP=<%=  slapd_ldap %>
-SLAPD_LDAPI=<%= slapd_ldapi %>
-SLAPD_LDAPS=<%= slapd_ldaps %>
+<%- if scope.lookupvar('::osfamily') == 'RedHat' then -%>
+SLAPD_LDAP=<%=  @slapd_ldap %>
+SLAPD_LDAPI=<%= @slapd_ldapi %>
+SLAPD_LDAPS=<%= @slapd_ldaps %>
 <%- else -%>
-<%= slapd_var %>="<%= slapd_url %>"
+<%= @slapd_var %>="<%= @slapd_url %>"
 <%- end -%>
