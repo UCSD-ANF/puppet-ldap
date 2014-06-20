@@ -4,7 +4,7 @@
 ###############################################################################
 
 #allow bind_v2
-<% if @bind_anon and bind_anon == true then -%>
+<% if @bind_anon and @bind_anon == true then -%>
 allow bind_anon_dn
 <% end -%>
 
@@ -31,7 +31,7 @@ modulepath	<%= scope.lookupvar('ldap::params::module_prefix') %>
 moduleload	<%= mod %>
 <% end -%>
 
-<% modules_inc.each do |mod| -%>
+<% [@modules_inc].flatten.each do |mod| -%>
 moduleload	<%= mod %>
 <% end -%>
 #moduleload	syncprov
@@ -106,11 +106,11 @@ limits dn.exact="<%= @sync_binddn%>" time.soft=unlimited time.hard=unlimited siz
 <% end -%>
 
 <% scope.lookupvar('ldap::params::index_base').each do |idx| -%>
-<%= idx %> 
+<%= idx %>
 <% end -%>
 
 <% @index_inc.each do |idx| -%>
-<%= idx %> 
+<%= idx %>
 <% end -%>
 
 # users can authenticate and change their password
@@ -124,7 +124,7 @@ access to dn.subtree="<%= @suffix %>" attrs=userPassword,shadowLastChange,
 
 #access to dn.subtree="<%= @suffix %>" attrs=sambaNTPassword,sambaLMPassword,sambaPwdMustChange,sambaBadPasswordCount,sambaBadPasswordTime,sambaPwdLastSet
 #<% if @syncprov and @sync_binddn != false then -%>
-#	by dn.exact="<%= sync_binddn %>" read
+#	by dn.exact="<%= @sync_binddn %>" read
 #<% end -%>
 #	by self write
 #	by anonymous auth
